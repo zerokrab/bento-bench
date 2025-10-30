@@ -1,0 +1,13 @@
+# Cargo
+target/
+Cargo.lock
+
+# Misc
+.DS_Store
+.idea
+.aider*
+.claude
+**/CLAUDE.md
+**/AGENTS.md
+.cursor
+.codex

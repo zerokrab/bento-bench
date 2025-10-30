@@ -1,0 +1,30 @@
+[package]
+name = "bencher"
+version = { workspace = true }
+edition = { workspace = true } 
+
+[[bin]]
+name = "bencher"
+path = "src/bin/bencher.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+bincode = { workspace = true }
+bonsai-sdk = { workspace = true }
+boundless-market = { workspace = true }
+bytemuck = { workspace = true }
+clap = { workspace = true, features = ["env", "derive"] }
+core = { workspace = true }
+risc0-zkvm = { workspace = true }
+guests = { workspace = true }
+serde = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+rmp-serde = { version = "1.3" }
+url = { workspace = true }
+alloy = "1.0.41"
+sqlx = { version = "0.8.6", features = ["postgres", "runtime-tokio"] }
+
+
+
