@@ -11,3 +11,6 @@ Cargo.lock
 **/AGENTS.md
 .cursor
 .codex
+
+*.elf
+*.input
