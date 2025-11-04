@@ -39,5 +39,6 @@ RUN apt-get update -q -y \
 
 COPY --from=builder /src/target/release/bencher /app/bencher
 COPY --from=builder /usr/local/risc0 /usr/local/risc0
+COPY scripts/docker-run-benchmarks.sh /app/docker-run-benchmarks.sh
 
-ENTRYPOINT ["/app/bencher"]
+ENTRYPOINT ["/app/docker-run-benchmarks.sh"]
