@@ -9,6 +9,8 @@ use std::path::PathBuf;
 use tracing::info;
 use url::Url;
 
+use crate::commands::NetworkArgs;
+
 #[derive(Args, Clone, Debug)]
 pub struct FetchAndSave {
     /// Proof request id to fetch.
@@ -16,20 +18,22 @@ pub struct FetchAndSave {
     pub request_id: U256,
     #[clap(short = 'f', long)]
     pub file_name: Option<PathBuf>,
-    /// RPC URL for the prover network
-    #[clap(long = "rpc-url", env = "RPC_URL")]
-    pub rpc_url: Option<Url>,
     /// Configuration for the Boundless deployment to use.
     #[clap(flatten, next_help_heading = "Boundless Deployment")]
-    pub deployment: Option<Deployment>,
+    pub network: NetworkArgs,
 }
 
 impl FetchAndSave {
     /// Run the benchmark command
     pub async fn run(&self) -> Result<()> {
         let client = Client::builder()
-            .with_rpc_url(self.rpc_url.clone().context("Must specify RPC_URL")?)
-            .with_deployment(self.deployment.clone())
+            .with_rpc_url(
+                self.network
+                    .rpc_url
+                    .clone()
+                    .context("Must specify RPC_URL")?,
+            )
+            .with_deployment(self.network.deployment.clone())
             .with_timeout(None)
             .build()
             .await?;

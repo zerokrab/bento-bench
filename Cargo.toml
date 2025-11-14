@@ -14,15 +14,14 @@ guests = { path = "crates/guests" }
 anyhow = "1.0.98"
 bincode = "1.3.3"
 bonsai-sdk = { version = "1.4.1", features = ["non_blocking"] }
-boundless-market = "1.0.0"
+boundless-market = "1.1.0"
 bytemuck = "1.16"
 clap = { version = "4.5", features = ["derive", "env"] }
+derive_more = "2"
 hex = { version = "0.4", default-features = false, features = ["alloc"] }
 risc0-binfmt = { version = "3.0.2" }
 risc0-build = { version = "3.0.3" }
 risc0-zkvm = { version = "3.0.3", default-features = false }
-# sample-guest-common = { path = "crates/sample-guest/common" }
-# sample-guest-methods = { path = "crates/sample-guest/methods" }
 serde = { version = "1.0", features = ["derive"] }
 tempfile = "3.10"
 thiserror = "1.0"

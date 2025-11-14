@@ -7,6 +7,7 @@ enum Command {
     BentoGuest(bencher::bento_sample::BentoSampleArgs),
     Fetch(Box<bencher::commands::fetch::FetchAndSave>),
     Bench(Box<bencher::commands::bench::ProverBenchmark>),
+    Prepare(Box<bencher::commands::prepare::PrepareArgs>),
 }
 
 #[derive(Parser, Debug)]
@@ -33,6 +34,9 @@ async fn main() -> Result<()> {
         }
         Command::Bench(bencher) => {
             bencher.run().await?;
+        }
+        Command::Prepare(prepare_args) => {
+            prepare_args.run().await?;
         }
     }
     Ok(())
