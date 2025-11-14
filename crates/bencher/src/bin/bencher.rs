@@ -8,6 +8,7 @@ enum Command {
     Fetch(Box<bencher::commands::fetch::FetchAndSave>),
     Bench(Box<bencher::commands::bench::ProverBenchmark>),
     Prepare(Box<bencher::commands::prepare::PrepareArgs>),
+    Datasheet(Box<bencher::commands::datasheet::DatasheetArgs>),
 }
 
 #[derive(Parser, Debug)]
@@ -37,6 +38,9 @@ async fn main() -> Result<()> {
         }
         Command::Prepare(prepare_args) => {
             prepare_args.run().await?;
+        }
+        Command::Datasheet(datasheet_args) => {
+            datasheet_args.run().await?;
         }
     }
     Ok(())

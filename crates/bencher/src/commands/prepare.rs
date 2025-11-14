@@ -30,19 +30,21 @@ pub struct GenerateArgs {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct Manifest(
+pub(crate) struct Manifest(
     /// Names of programs to benchmark
-    HashMap<String, Vec<ManifestEntry>>,
+    pub HashMap<String, Vec<ManifestEntry>>,
 );
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct ManifestEntry {
+pub(crate) struct ManifestEntry {
     /// Will be filled in if not provided by fetching the request
     pub image_id: Option<String>,
     /// Proof request id to fetch.
     pub request_id: U256,
     /// Description of the request
     pub description: String,
+    /// Optional UUID for the entry
+    pub uuid: Option<uuid::Uuid>,
 }
 
 impl PrepareArgs {
@@ -150,6 +152,9 @@ impl PrepareArgs {
                     std::fs::write(&input_path, input).with_context(|| {
                         format!("Failed to write input file to {:?}", input_path)
                     })?;
+                }
+                if entry.uuid.is_none() {
+                    entry.uuid = Some(uuid::Uuid::new_v4());
                 }
             }
         }

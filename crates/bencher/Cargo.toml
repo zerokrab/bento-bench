@@ -28,3 +28,4 @@ alloy = "1.0.41"
 sqlx = { version = "0.8.6", features = ["postgres", "runtime-tokio"] }
 serde_json = "1.0.104"
 toml = "0.9"
+uuid = { workspace = true, features = ["serde", "v4"] }

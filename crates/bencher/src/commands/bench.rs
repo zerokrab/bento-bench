@@ -231,7 +231,7 @@ fn load_elf_and_input(
 }
 
 /// Create a PostgreSQL connection pool from environment variables
-async fn create_pg_pool() -> Result<PgPool> {
+pub async fn create_pg_pool() -> Result<PgPool> {
     let database_url = if let Ok(url) = std::env::var("DATABASE_URL") {
         url
     } else {
