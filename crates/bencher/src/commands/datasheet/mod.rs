@@ -1,11 +1,11 @@
-use crate::commands::datasheet::config::DatasheetConfig;
+use crate::commands::datasheet::{config::DatasheetConfig, db::DbArgs};
 use anyhow::Result;
 use clap::{Args, Subcommand};
 
 mod config;
+mod db;
 mod generate;
 mod prepare;
-
 use generate::GenerateArgs;
 use prepare::PrepareArgs;
 
@@ -22,6 +22,7 @@ pub struct DatasheetArgs {
 pub enum Datasheet {
     Prepare(Box<PrepareArgs>),
     Generate(Box<GenerateArgs>),
+    Db(Box<DbArgs>),
 }
 
 impl DatasheetArgs {
@@ -32,6 +33,9 @@ impl DatasheetArgs {
                 args.run(self.config.clone()).await?;
             }
             Datasheet::Prepare(args) => {
+                args.run(self.config.clone()).await?;
+            }
+            Datasheet::Db(args) => {
                 args.run(self.config.clone()).await?;
             }
         }
