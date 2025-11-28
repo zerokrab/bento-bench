@@ -1,88 +1,48 @@
-use crate::commands::NetworkArgs;
-use alloy::primitives::U256;
+use crate::{commands::datasheet::config::DatasheetConfig, datasheet::Manifest};
 use anyhow::{Context, Result, bail, ensure};
 use boundless_market::{Client, contracts::RequestInputType, input::GuestEnv, storage::fetch_url};
-use clap::{Args, Subcommand};
+use clap::Args;
 use risc0_zkvm::compute_image_id;
-use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, path::PathBuf};
+use std::path::PathBuf;
 use tokio::fs::create_dir_all;
 
 #[derive(Args, Clone, Debug)]
-pub struct PrepareArgs {
-    #[command(subcommand)]
-    pub command: Prepare,
-    #[clap(flatten, next_help_heading = "Boundless Deployment")]
-    pub network: NetworkArgs,
-}
-
-#[derive(Subcommand, Clone, Debug)]
-pub enum Prepare {
-    Generate(GenerateArgs),
-}
-#[derive(Args, Clone, Debug)]
-pub struct GenerateArgs {
-    /// RPC URL for the prover network
-    #[clap(long, short = 'm')]
-    manifest: PathBuf,
-    #[clap(long, short = 'a')]
-    archive_dir: PathBuf,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub(crate) struct Manifest(
-    /// Names of programs to benchmark
-    pub HashMap<String, Vec<ManifestEntry>>,
-);
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub(crate) struct ManifestEntry {
-    /// Will be filled in if not provided by fetching the request
-    pub image_id: Option<String>,
-    /// Proof request id to fetch.
-    pub request_id: U256,
-    /// Description of the request
-    pub description: String,
-    /// Optional UUID for the entry
-    pub uuid: Option<uuid::Uuid>,
-}
+pub struct PrepareArgs {}
 
 impl PrepareArgs {
-    /// Run the prepare command
-    pub async fn run(&self) -> Result<()> {
-        match &self.command {
-            Prepare::Generate(args) => {
-                self.generate(args).await?;
-            }
-        }
-        Ok(())
-    }
+    pub(crate) async fn run(&self, config: DatasheetConfig) -> Result<()> {
+        let prover_config = config.prover_config.clone();
 
-    async fn generate(&self, args: &GenerateArgs) -> Result<()> {
+        let archive_dir = config.archive_dir.clone();
+        let manifest_path = config
+            .manifest_path
+            .clone()
+            .unwrap_or_else(|| archive_dir.join("manifest.json"));
+
         let client = Client::builder()
             .with_rpc_url(
-                self.network
+                prover_config
                     .rpc_url
                     .clone()
                     .context("Must specify RPC_URL")?,
             )
-            .with_deployment(self.network.deployment.clone())
+            .with_deployment(prover_config.deployment.clone())
             .with_timeout(None)
             .build()
             .await?;
 
-        let manifest_str = std::fs::read_to_string(&args.manifest)
-            .with_context(|| format!("Failed to read manifest file: {:?}", args.manifest))?;
+        let manifest_str = std::fs::read_to_string(&manifest_path)
+            .with_context(|| format!("Failed to read manifest file: {:?}", manifest_path))?;
 
         let mut manifest: Manifest = serde_json::from_str(&manifest_str)
-            .with_context(|| format!("Failed to parse manifest file: {:?}", args.manifest))?;
-        let images_dir = args.archive_dir.join("images");
+            .with_context(|| format!("Failed to parse manifest file: {:?}", manifest_path))?;
+        let images_dir = archive_dir.join("images");
         create_dir_all(&images_dir).await.context(format!(
             "Failed to create images directory: {:?}",
             images_dir
         ))?;
 
-        let inputs_dir = args.archive_dir.join("inputs");
+        let inputs_dir = archive_dir.join("inputs");
         create_dir_all(&inputs_dir).await.context(format!(
             "Failed to create inputs directory: {:?}",
             inputs_dir
@@ -160,7 +120,7 @@ impl PrepareArgs {
         }
         let manifest_json =
             serde_json::to_vec_pretty(&manifest).context("Failed to serialize manifest to JSON")?;
-        std::fs::write(args.archive_dir.join("manifest.json"), manifest_json)
+        std::fs::write(archive_dir.join("manifest.json"), manifest_json)
             .context("Failed to write updated manifest file")?;
 
         Ok(())

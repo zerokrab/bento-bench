@@ -2,12 +2,6 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 #[derive(Subcommand, Clone, Debug)]
 enum Command {
-    /// Commands for running the Bento Sample Guest
-    #[command(name = "bento-cli")]
-    BentoGuest(bencher::bento_sample::BentoSampleArgs),
-    Fetch(Box<bencher::commands::fetch::FetchAndSave>),
-    Bench(Box<bencher::commands::bench::ProverBenchmark>),
-    Prepare(Box<bencher::commands::prepare::PrepareArgs>),
     Datasheet(Box<bencher::commands::datasheet::DatasheetArgs>),
 }
 
@@ -27,18 +21,6 @@ async fn main() -> Result<()> {
 
     let args = Args::parse();
     match args.command {
-        Command::BentoGuest(bento_args) => {
-            bencher::bento_sample::run(bento_args).await?;
-        }
-        Command::Fetch(fetch_args) => {
-            fetch_args.run().await?;
-        }
-        Command::Bench(bencher) => {
-            bencher.run().await?;
-        }
-        Command::Prepare(prepare_args) => {
-            prepare_args.run().await?;
-        }
         Command::Datasheet(datasheet_args) => {
             datasheet_args.run().await?;
         }

@@ -16,6 +16,7 @@ bytemuck = { workspace = true }
 clap = { workspace = true, features = ["env", "derive"] }
 core = { workspace = true }
 derive_more = { workspace = true }
+hex = { workspace = true }
 risc0-zkvm = { workspace = true }
 guests = { workspace = true }
 serde = { workspace = true }
