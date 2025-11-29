@@ -6,7 +6,7 @@ use clap::{Args, Subcommand};
 #[derive(Subcommand, Clone, Debug)]
 pub enum RunsCmd {
     Latest,
-    Uuid {
+    Get {
         uuid: uuid::Uuid,
     },
     All {
@@ -19,7 +19,7 @@ pub enum RunsCmd {
 #[derive(Subcommand, Clone, Debug)]
 pub enum ManifestCmd {
     Latest,
-    Uuid { uuid: uuid::Uuid },
+    Get { uuid: uuid::Uuid },
     All,
     Info,
 }
@@ -61,7 +61,7 @@ impl DbArgs {
                     let manifest = db.get_manifest_by_uuid(latest_uuid).await?;
                     println!("{}", serde_json::to_string_pretty(&manifest)?);
                 }
-                ManifestCmd::Uuid { uuid } => {
+                ManifestCmd::Get { uuid } => {
                     let manifest = db.get_manifest_by_uuid(uuid).await?;
                     println!("{}", serde_json::to_string_pretty(&manifest)?);
                 }
@@ -85,7 +85,7 @@ impl DbArgs {
                     let datasheet = db.get_datasheet_by_uuid(latest_uuid).await?;
                     println!("{}", serde_json::to_string_pretty(&datasheet)?);
                 }
-                RunsCmd::Uuid { uuid } => {
+                RunsCmd::Get { uuid } => {
                     let datasheet = db.get_datasheet_by_uuid(uuid).await?;
                     println!("{}", serde_json::to_string_pretty(&datasheet)?);
                 }

@@ -8,14 +8,14 @@ use bonsai_sdk::non_blocking::Client as BonsaiClient;
 use clap::Args;
 
 #[derive(Args, Clone, Debug)]
-pub struct GenerateArgs {
+pub struct BenchArgs {
     #[clap(short, long, default_value_t = true)]
     exec_only: bool,
     #[clap(long)]
     manifest_uuid: Option<uuid::Uuid>,
 }
 
-impl GenerateArgs {
+impl BenchArgs {
     /// Run the datasheet generate command
     pub async fn run(&self, config: DatasheetConfig) -> Result<()> {
         let db_path = config.archive_dir.join("datasheet.db");

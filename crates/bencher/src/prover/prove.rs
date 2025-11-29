@@ -16,7 +16,7 @@ pub async fn prove_bonsai(
     // Check if we can connect to PostgreSQL using environment variables
     let pg_pool = match create_pg_pool().await {
         Ok(pool) => {
-            tracing::info!("Connected to PostgreSQL database for enhanced metrics.");
+            tracing::debug!("Connected to PostgreSQL database for enhanced metrics.");
 
             Some(pool)
         }
@@ -37,12 +37,12 @@ pub async fn prove_bonsai(
         .upload_img(&image_id, elf)
         .await
         .context("Failed to upload ELF")?;
-    tracing::info!("Uploaded ELF to {}", &image_id);
+    tracing::debug!("Uploaded ELF to {}", &image_id);
     let input_id = prover
         .upload_input(input)
         .await
         .context("Failed to upload set-builder input")?;
-    tracing::info!("Uploaded input to {}", input_id);
+    tracing::debug!("Uploaded input to {}", input_id);
 
     let assumptions = vec![];
     let start_time = std::time::Instant::now();
@@ -50,7 +50,7 @@ pub async fn prove_bonsai(
     let proof_id = prover
         .create_session(image_id, input_id, assumptions.clone(), exec_only)
         .await?;
-    tracing::info!("Created session {}", proof_id.uuid);
+    tracing::debug!("Created session {}", proof_id.uuid);
 
     let (stats, _elapsed_time) = loop {
         let status = proof_id.status(&prover).await?;
@@ -127,7 +127,7 @@ pub async fn create_pg_pool() -> Result<PgPool> {
     let database_url = if let Ok(url) = std::env::var("DATABASE_URL") {
         url
     } else {
-        tracing::info!(
+        tracing::debug!(
             "DATABASE_URL not set; attempting to use DEFAULT_TASKDB_URL: {}",
             DEFAULT_TASKDB_URL
         );
