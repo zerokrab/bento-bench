@@ -1,5 +1,4 @@
 use alloy::primitives::U256;
-use bonsai_sdk::responses::SessionStats;
 use derive_more::Debug;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -49,4 +48,6 @@ pub struct DatasheetEntry {
     pub cycles: u64,
     pub exec_time_secs: f64,
     pub prove_time_secs: f64,
+    pub exec_khz: f64,
+    pub prove_khz: f64,
 }

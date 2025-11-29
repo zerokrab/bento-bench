@@ -9,7 +9,7 @@ use clap::Args;
 
 #[derive(Args, Clone, Debug)]
 pub struct BenchArgs {
-    #[clap(short, long, default_value_t = true)]
+    #[clap(short, long, default_value_t = false)]
     exec_only: bool,
     #[clap(long)]
     manifest_uuid: Option<uuid::Uuid>,
@@ -89,6 +89,17 @@ impl BenchArgs {
                 .1
             };
 
+            let exec_khz = if exec_elapsed_secs > 0.0 {
+                session_stats.total_cycles as f64 / exec_elapsed_secs / 1000.0
+            } else {
+                0.0
+            };
+            let prove_khz = if prove_elapsed_secs > 0.0 {
+                session_stats.total_cycles as f64 / prove_elapsed_secs / 1000.0
+            } else {
+                0.0
+            };
+
             res.push(DatasheetEntry {
                 id: None,
                 manifest_entry_id: entry.id.expect("manifest entry id missing"),
@@ -99,6 +110,8 @@ impl BenchArgs {
                 cycles: session_stats.cycles,
                 exec_time_secs: exec_elapsed_secs,
                 prove_time_secs: prove_elapsed_secs,
+                exec_khz,
+                prove_khz,
             });
         }
 

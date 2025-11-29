@@ -75,12 +75,6 @@ pub async fn prove_bonsai(
 
     // Try to get effective KHz from PostgreSQL if available
     if let Some(ref pool) = pg_pool {
-        let total_cycles_query = r#"
-                    SELECT (output->>'total_cycles')::FLOAT8
-                    FROM tasks
-                    WHERE task_id = 'init' AND job_id = $1::uuid
-                "#;
-
         let elapsed_secs_query = r#"
                     SELECT EXTRACT(EPOCH FROM (MAX(updated_at) - MIN(started_at)))::FLOAT8
                     FROM tasks
@@ -101,14 +95,12 @@ pub async fn prove_bonsai(
                 tracing::debug!(
                     "Failed to retrieve data from PostgreSQL, using client-side calculation"
                 );
-                let total_cycles: f64 = stats.total_cycles as f64;
                 let elapsed_secs = start_time.elapsed().as_secs_f64();
                 Ok((stats, elapsed_secs))
             }
         }
     } else {
         tracing::debug!("No PostgreSQL data found for job, using client-side calculation.");
-        let total_cycles: f64 = stats.total_cycles as f64;
         let elapsed_secs = start_time.elapsed().as_secs_f64();
         Ok((stats, elapsed_secs))
     }
