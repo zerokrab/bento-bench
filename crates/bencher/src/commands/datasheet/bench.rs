@@ -66,16 +66,39 @@ impl BenchArgs {
                     .join(format!("0x{:x}.input", entry.request_id)),
             )?;
 
-            let (total_cycles, elapsed_secs) =
-                prove_bonsai(prover.clone(), image_id, elf, input, self.exec_only).await?;
+            let (session_stats, exec_elapsed_secs) = prove_bonsai(
+                prover.clone(),
+                image_id.clone(),
+                elf.clone(),
+                input.clone(),
+                true,
+            )
+            .await?;
+
+            let prove_elapsed_secs = if self.exec_only {
+                0.0
+            } else {
+                prove_bonsai(
+                    prover.clone(),
+                    image_id.clone(),
+                    elf.clone(),
+                    input.clone(),
+                    self.exec_only,
+                )
+                .await?
+                .1
+            };
 
             res.push(DatasheetEntry {
                 id: None,
                 manifest_entry_id: entry.id.expect("manifest entry id missing"),
                 label: entry.label.clone(),
                 description: entry.description.clone(),
-                num_cycles: total_cycles,
-                elapsed_time_secs: elapsed_secs,
+                segments: session_stats.segments as u64,
+                total_cycles: session_stats.total_cycles,
+                cycles: session_stats.cycles,
+                exec_time_secs: exec_elapsed_secs,
+                prove_time_secs: prove_elapsed_secs,
             });
         }
 

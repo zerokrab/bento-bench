@@ -1,5 +1,5 @@
 use anyhow::{Context, Result, bail, ensure};
-use bonsai_sdk::non_blocking::Client as BonsaiClient;
+use bonsai_sdk::{non_blocking::Client as BonsaiClient, responses::SessionStats};
 use hex::FromHex;
 use risc0_zkvm::{Digest, compute_image_id};
 use sqlx::{postgres::PgPool, postgres::PgPoolOptions};
@@ -12,7 +12,7 @@ pub async fn prove_bonsai(
     elf: Vec<u8>,
     input: Vec<u8>,
     exec_only: bool,
-) -> Result<(f64, f64)> {
+) -> Result<(SessionStats, f64)> {
     // Check if we can connect to PostgreSQL using environment variables
     let pg_pool = match create_pg_pool().await {
         Ok(pool) => {
@@ -87,24 +87,15 @@ pub async fn prove_bonsai(
                     WHERE job_id = $1::uuid
                 "#;
 
-        let cycles_result = sqlx::query_scalar::<_, f64>(total_cycles_query)
-            .bind(proof_id.uuid.clone())
-            .fetch_optional(pool)
-            .await;
-
         let elapsed_result = sqlx::query_scalar::<_, f64>(elapsed_secs_query)
             .bind(proof_id.uuid.clone())
             .fetch_optional(pool)
             .await;
 
-        match (cycles_result, elapsed_result) {
-            (Ok(Some(cycles)), Ok(Some(elapsed))) => {
-                tracing::debug!(
-                    "Retrieved from PostgreSQL: {} cycles in {} seconds",
-                    cycles,
-                    elapsed
-                );
-                Ok((cycles, elapsed))
+        match elapsed_result {
+            Ok(Some(elapsed)) => {
+                tracing::debug!("Retrieved from PostgreSQL: {} seconds", elapsed);
+                Ok((stats, elapsed))
             }
             _ => {
                 tracing::debug!(
@@ -112,14 +103,14 @@ pub async fn prove_bonsai(
                 );
                 let total_cycles: f64 = stats.total_cycles as f64;
                 let elapsed_secs = start_time.elapsed().as_secs_f64();
-                Ok((total_cycles, elapsed_secs))
+                Ok((stats, elapsed_secs))
             }
         }
     } else {
         tracing::debug!("No PostgreSQL data found for job, using client-side calculation.");
         let total_cycles: f64 = stats.total_cycles as f64;
         let elapsed_secs = start_time.elapsed().as_secs_f64();
-        Ok((total_cycles, elapsed_secs))
+        Ok((stats, elapsed_secs))
     }
 }
 /// Create a PostgreSQL connection pool from environment variables

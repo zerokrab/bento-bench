@@ -1,4 +1,5 @@
 use alloy::primitives::U256;
+use bonsai_sdk::responses::SessionStats;
 use derive_more::Debug;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -41,6 +42,11 @@ pub struct DatasheetEntry {
     pub manifest_entry_id: Uuid,
     pub label: String,
     pub description: String,
-    pub num_cycles: f64,
-    pub elapsed_time_secs: f64,
+    pub segments: u64,
+    /// Total cycles run within guest
+    pub total_cycles: u64,
+    /// User cycles run within guest, slightly below total overhead cycles
+    pub cycles: u64,
+    pub exec_time_secs: f64,
+    pub prove_time_secs: f64,
 }
