@@ -1,24 +1,30 @@
+use crate::commands::refactor::manifest::{ManifestEntryV2, load_manifest, write_manifest};
 use crate::commands::refactor::prepare::{get_filename_without_extension, save_input};
-use crate::commands::refactor::{Manifest, ManifestEntryV2};
 use anyhow::{Context, Result, anyhow};
 use clap::Args;
-use std::path::{PathBuf};
+use std::path::PathBuf;
 use std::str::FromStr;
 use tokio::fs;
 use tokio::fs::create_dir_all;
 
 #[derive(Args, Clone, Debug)]
 pub struct PrepareLocalArgs {
+    /// Path to manifest file
     #[clap(long = "manifest", default_value = "./manifest.json")]
-    manifest_path: String,
+    manifest_path: PathBuf,
+    /// Description of the image/input
     #[clap(long)]
     description: String,
+    /// Path to image file
     #[clap(long)]
     image: PathBuf,
+    /// Input string
     #[clap(long)]
     input: Option<String>,
+    /// Path to input file
     #[clap(long)]
     input_path: Option<PathBuf>,
+    /// Directory to store inputs/images
     #[clap(long)]
     data_dir: PathBuf,
 }
@@ -26,12 +32,8 @@ pub struct PrepareLocalArgs {
 impl PrepareLocalArgs {
     pub(crate) async fn run(&self) -> Result<()> {
         let data_dir = self.data_dir.clone();
-        let manifest_path = self.manifest_path.clone();
 
-        let manifest_str = std::fs::read_to_string(&manifest_path)
-            .with_context(|| format!("Failed to read manifest file: {:?}", manifest_path))?;
-        let mut manifest: Manifest = serde_json::from_str(&manifest_str)
-            .with_context(|| format!("Failed to parse manifest file: {:?}", manifest_path))?;
+        let mut manifest = load_manifest(&self.manifest_path)?;
 
         let images_dir = data_dir.join("images");
         create_dir_all(&images_dir).await.context(format!(
@@ -83,13 +85,7 @@ impl PrepareLocalArgs {
 
         manifest.entries.push(entry);
 
-        let out_str = serde_json::to_string_pretty(&manifest)?;
-        fs::write(&self.manifest_path, out_str)
-            .await
-            .context(format!(
-                "Failed to write manifest file to {:?}",
-                self.manifest_path
-            ))?;
+        write_manifest(&manifest, &self.manifest_path).await?;
 
         Ok(())
     }

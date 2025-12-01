@@ -1,9 +1,9 @@
-use alloy::primitives::{keccak256};
-use anyhow::{Context, Result, bail, ensure};
+use alloy::primitives::keccak256;
+use anyhow::{Context, Result, bail};
 use boundless_market::contracts::RequestInputType;
 use boundless_market::{GuestEnv, ProofRequest, storage::fetch_url};
-use risc0_zkvm::{compute_image_id};
-use std::path::{PathBuf};
+use risc0_zkvm::compute_image_id;
+use std::path::PathBuf;
 
 pub async fn fetch_image(url: &String, dir: &PathBuf) -> Result<String> {
     let elf = fetch_url(&url).await?;
