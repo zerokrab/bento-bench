@@ -3,6 +3,7 @@ use clap::{Parser, Subcommand};
 #[derive(Subcommand, Clone, Debug)]
 enum Command {
     Datasheet(Box<bencher::commands::datasheet::DatasheetArgs>),
+    Refactor(Box<bencher::commands::refactor::RefactorArgs>),
 }
 
 #[derive(Parser, Debug)]
@@ -23,6 +24,9 @@ async fn main() -> Result<()> {
     match args.command {
         Command::Datasheet(datasheet_args) => {
             datasheet_args.run().await?;
+        }
+        Command::Refactor(refactor_args) => {
+            refactor_args.run().await?;
         }
     }
     Ok(())
