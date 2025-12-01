@@ -20,6 +20,7 @@ pub struct ManifestEntryV2 { // TODO: Rename once other impl is removed
     pub image_id: Option<String>,
 }
 
+// TODO: Handle creating manifest if does not exist
 pub fn load_manifest(manifest_path: &Path) -> Result<Manifest> {
     let manifest_str = std::fs::read_to_string(&manifest_path)
         .with_context(|| format!("Failed to read manifest file: {:?}", manifest_path))?;
