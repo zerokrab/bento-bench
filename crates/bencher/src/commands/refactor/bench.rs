@@ -1,7 +1,7 @@
 use crate::ProverConfig;
 use crate::commands::refactor::manifest::load_manifest;
 use crate::prove::prove_bonsai;
-use anyhow::Result;
+use anyhow::{Context, Result};
 use bonsai_sdk::non_blocking::Client as BonsaiClient;
 use clap::Args;
 use serde::Serialize;
@@ -44,7 +44,6 @@ pub struct BenchResult {
 }
 
 impl BenchArgs {
-    /// Run the datasheet generate command
     pub async fn run(&self) -> Result<()> {
         let manifest = load_manifest(&self.manifest_path)?;
 
@@ -64,13 +63,18 @@ impl BenchArgs {
         let total = manifest.entries.len();
         for entry in manifest.entries.iter() {
             tracing::info!("Running benchmark {count} of {total}...");
-            let image_id = entry.image_id.clone().expect("image id missing");
-            let input_id = entry.input_id.clone().expect("input id missing");
+            let image_id = entry.image_id.clone().expect("Image id missing from manifest");
+            let input_id = entry.input_id.clone().expect("Input id missing from manifest");
 
-            let elf = std::fs::read(images_dir.join(format!("{}.elf", image_id)))?;
+            let image_path = images_dir.join(format!("{}.elf", image_id));
+            let input_path = inputs_dir.join(format!("{}.input", input_id));
 
-            let input = std::fs::read(inputs_dir.join(format!("{}.input", input_id)))?;
+            tracing::debug!("Loading image from {image_path:?}");
+            let elf = std::fs::read(&image_path).with_context(|| format!("Failed to load image file: {image_path:?}"))?;
+            tracing::debug!("Loading image from {input_path:?}");
+            let input = std::fs::read(&input_path).with_context(|| format!("Failed to load input file: {input_path:?}"))?;
 
+            tracing::debug!("Running program execution");
             let (session_stats, exec_elapsed_secs) = prove_bonsai(
                 prover.clone(),
                 image_id.clone(),
@@ -78,11 +82,13 @@ impl BenchArgs {
                 input.clone(),
                 true,
             )
-            .await?;
+            .await.context("Execution failed")?;
 
             let prove_elapsed_secs = if self.exec_only {
+                tracing::debug!("Exec only, skipping proof generation");
                 0.0
             } else {
+                tracing::debug!("Generating program proof");
                 prove_bonsai(
                     prover.clone(),
                     image_id.clone(),
@@ -90,7 +96,7 @@ impl BenchArgs {
                     input.clone(),
                     self.exec_only,
                 )
-                .await?
+                .await.context("Proving failed")?
                 .1
             };
 
