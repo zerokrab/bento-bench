@@ -56,14 +56,7 @@ This will copy the provided image/input into the data dir, and append them to th
 
 ## Docker
 
-Run a single benchmark:
-
 ```shell
-docker run --entrypoint=/app/bencher ghcr.io/2boys1proof/bencher bench -f benchmark.elf -i benchmark.input
+docker run --mount <data-path>:/data <manifest-path>:/manifest.json ghcr.io/2boys1proof/bencher bench 
 ```
 
-Run all benchmarks in a directory:
-
-```shell
-docker run --mount type=bind,src=<host_dir>,dst=/data ghcr.io/2boys1proof/bencher
-```

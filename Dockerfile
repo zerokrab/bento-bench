@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG RUST_IMG=rust:1.89-bookworm
+ARG RUST_IMG=rust:1.91-bookworm
 
 FROM ${RUST_IMG} AS rust-builder
 
@@ -29,7 +29,7 @@ FROM rust-builder AS builder
 WORKDIR /src/
 COPY . .
 
-RUN cargo build --release -p bencher --bin bencher
+RUN cargo build --release -p bento-bench --bin bento-bench
 
 FROM debian:bookworm-slim AS runtime
 
@@ -37,8 +37,12 @@ RUN apt-get update -q -y \
     && apt-get install -q -y ca-certificates libssl3 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /src/target/release/bencher /app/bencher
+COPY --from=builder /src/target/release/bento-bench /app/bento-bench
 COPY --from=builder /usr/local/risc0 /usr/local/risc0
 COPY scripts/docker-run-benchmarks.sh /app/docker-run-benchmarks.sh
+
+VOLUME ["/data"]
+VOLUME ["/manifest.json"]
+
 
 ENTRYPOINT ["/app/docker-run-benchmarks.sh"]
