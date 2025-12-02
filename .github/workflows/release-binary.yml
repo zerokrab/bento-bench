@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - mintybasil/binaries
 
 env:
   BINARY_NAME: bento-bench
@@ -46,8 +45,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.sha.outputs.sha }}
-          release_name: Release ${{ steps.sha.outputs.sha }}
+          tag_name: main-${{ steps.sha.outputs.sha }}
+          release_name: Release main-${{ steps.sha.outputs.sha }}
           draft: false
           prerelease: false
 
