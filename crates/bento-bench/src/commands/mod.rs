@@ -1,0 +1,57 @@
+use crate::commands::run_bench::RunArgs;
+use crate::commands::prepare_local::PrepareLocalArgs;
+use crate::commands::prepare_request::PrepareRequestArgs;
+use anyhow::Result;
+use clap::{Args, Parser, Subcommand};
+use std::path::PathBuf;
+
+mod run_bench;
+mod prepare;
+mod prepare_local;
+mod prepare_request;
+
+mod manifest;
+
+#[derive(Parser, Debug)]
+#[clap(about = "Bento benchmarking utility", arg_required_else_help = true)]
+pub struct Cli {
+    #[command(subcommand)]
+    pub command: Command,
+}
+
+#[derive(Subcommand, Clone, Debug)]
+pub enum Command {
+    /// Fetch and import a request from the market.
+    PrepareRequest(Box<PrepareRequestArgs>),
+    /// Import a local image and input.
+    PrepareLocal(Box<PrepareLocalArgs>),
+    /// Run a collection of benchmarks.
+    Run(Box<RunArgs>),
+}
+
+#[derive(Args, Clone, Debug)]
+pub struct CommonArgs {
+    /// Path to manifest file
+    #[clap(long = "manifest", default_value = "./manifest.json")]
+    manifest_path: PathBuf,
+    /// Directory to load images/inputs from
+    #[clap(long, default_value = "./data")]
+    data_dir: PathBuf,
+}
+
+impl Cli {
+    pub async fn run(&self) -> Result<()> {
+        match &self.command {
+            Command::PrepareRequest(args) => {
+                args.run().await?;
+            }
+            Command::PrepareLocal(args) => {
+                args.run().await?;
+            }
+            Command::Run(args) => {
+                args.run().await?;
+            }
+        }
+        Ok(())
+    }
+}

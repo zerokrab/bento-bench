@@ -1,26 +1,62 @@
-# Bento Utils
+# bento-bench
 
-## From Source
-Fetching an image and input from order:
+## Installing
 
-```
-RUST_LOG=info cargo run fetch --request-id 0xf353bda16a83399c11e09615ee7ac326a5a08ccf98b02453  -f kailua-14B
+### Binaries
+
+WIP
+
+### Build from source
+```shell
+git clone github.com/2boys1proof/bento-bench
+cd bento-bench
+cargo build --release
 ```
 
-Running against Bento
 
+## Running Benchmarks
+
+> WIP - suites will be provided soon.
+
+Once you have a manifest and data directory, benchmarks can be run with
+```shell
+bento-bench run \
+    --manifest manifest.json \
+    --data-dir ./data
 ```
-RUST_BACKTRACE=1  RUST_LOG="info,bencher=debug" cargo run bench -f kailua-14B.elf -i kailua-14B.input
+
+To configure the bento backend, see `bento-bench run --help`.
+
+## Creating Benchmarks
+
+### Fetching Market Requests
+
+```shell
+bento-bench prepare-request \
+    --manifest manifest.json \
+    --request-id 0x1234...ABCD \
+    --description "A simple request (500M)" \
+    --data-dir ./data
+    --rpc-url "http://node:8545"
 ```
+
+This will fetch and save the image and input to the data dir, and append them to the manifest.
+
+### Import Local Images/Inputs
+
+```shell
+bento-bench prepare-local \
+    --manifest manifest.json \
+    --image /path/to/image \
+    --input <input string> \ # Or --input-path to load from file
+    --description "A local benchmark (1B)"
+    --data-dir ./data
+```
+This will copy the provided image/input into the data dir, and append them to the manifest
 
 ## Docker
 
-Run a single benchmark:
 ```shell
-docker run --entrypoint=/app/bencher ghcr.io/2boys1proof/bencher bench -f benchmark.elf -i benchmark.input
+docker run --mount <data-path>:/data <manifest-path>:/manifest.json ghcr.io/2boys1proof/bento-bench 
 ```
 
-Run all benchmarks in a directory:
-```shell
-docker run --mount type=bind,src=<host_dir>,dst=/data ghcr.io/2boys1proof/bencher
-```
