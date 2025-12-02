@@ -1,8 +1,8 @@
+use crate::commands::refactor::bench::BenchArgs;
 use crate::commands::refactor::prepare_local::PrepareLocalArgs;
 use crate::commands::refactor::prepare_request::PrepareRequestArgs;
-use anyhow::{Result};
+use anyhow::Result;
 use clap::{Args, Subcommand};
-use crate::commands::refactor::bench::BenchArgs;
 
 mod bench;
 mod prepare;

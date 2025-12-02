@@ -45,7 +45,7 @@ impl PrepareRequestArgs {
             inputs_dir
         ))?;
 
-        tracing::info!("Fetching data for request ID: {}", &self.request_id);
+        tracing::info!("Fetching data for request ID: 0x{:x}", &self.request_id);
         let client = Client::builder()
             .with_rpc_url(self.rpc_url.clone())
             .with_timeout(None)

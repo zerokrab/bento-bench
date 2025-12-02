@@ -14,7 +14,7 @@ pub async fn fetch_image(url: &String, dir: &PathBuf) -> Result<String> {
 
     // Write the ELF to the archive dir if it doesn't exist
     if !does_file_exist(&elf_path).await {
-        tracing::info!("Writing ELF to images dir: {:?}", elf_path);
+        tracing::debug!("Saved image to {elf_path:?}");
         std::fs::write(&elf_path, elf)
             .with_context(|| format!("Failed to write ELF file to {:?}", elf_path))?;
     }
@@ -43,10 +43,12 @@ pub fn save_input(input: Vec<u8>, out_dir: &PathBuf) -> Result<String> {
     let input_hash = keccak256(&input);
 
     let out_path = &out_dir.join(format!("{:x}.input", input_hash));
-    std::fs::write(out_path, input)
+    std::fs::write(&out_path, input)
         .with_context(|| format!("Failed to write input file to {:?}", out_path))?;
 
-    Ok(input_hash.to_string())
+    tracing::debug!("Saved input to {out_path:?}");
+
+    Ok(format!("{input_hash:x}"))
 }
 
 pub async fn does_file_exist(path: &PathBuf) -> bool {

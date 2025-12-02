@@ -6,7 +6,7 @@ use bonsai_sdk::non_blocking::Client as BonsaiClient;
 use clap::Args;
 use serde::Serialize;
 use std::path::PathBuf;
-use tabled::settings::{Rotate, Settings};
+use tabled::settings::{Reverse, Rotate, Settings, Style};
 use tabled::{Table, Tabled};
 use tokio::fs::write;
 
@@ -31,15 +31,23 @@ pub struct BenchArgs {
 
 #[derive(Tabled, Serialize)]
 pub struct BenchResult {
+    #[tabled(rename = "Description")]
     pub description: String,
+    #[tabled(rename = "Segments")]
     pub segments: u64,
     /// Total cycles run within guest
+    #[tabled(rename = "Total Cycles")]
     pub total_cycles: u64,
     /// User cycles run within guest, slightly below total overhead cycles
+    #[tabled(rename = "Cycles")]
     pub cycles: u64,
+    #[tabled(rename = "Exec Time (secs)")]
     pub exec_time_secs: f64,
+    #[tabled(rename = "Prove Time (secs)")]
     pub prove_time_secs: f64,
+    #[tabled(rename = "Exec KHz")]
     pub exec_khz: f64,
+    #[tabled(rename = "Prove KHz")]
     pub prove_khz: f64,
 }
 
@@ -63,16 +71,24 @@ impl BenchArgs {
         let total = manifest.entries.len();
         for entry in manifest.entries.iter() {
             tracing::info!("Running benchmark {count} of {total}...");
-            let image_id = entry.image_id.clone().expect("Image id missing from manifest");
-            let input_id = entry.input_id.clone().expect("Input id missing from manifest");
+            let image_id = entry
+                .image_id
+                .clone()
+                .expect("Image id missing from manifest");
+            let input_id = entry
+                .input_id
+                .clone()
+                .expect("Input id missing from manifest");
 
             let image_path = images_dir.join(format!("{}.elf", image_id));
             let input_path = inputs_dir.join(format!("{}.input", input_id));
 
             tracing::debug!("Loading image from {image_path:?}");
-            let elf = std::fs::read(&image_path).with_context(|| format!("Failed to load image file: {image_path:?}"))?;
+            let elf = std::fs::read(&image_path)
+                .with_context(|| format!("Failed to load image file: {image_path:?}"))?;
             tracing::debug!("Loading image from {input_path:?}");
-            let input = std::fs::read(&input_path).with_context(|| format!("Failed to load input file: {input_path:?}"))?;
+            let input = std::fs::read(&input_path)
+                .with_context(|| format!("Failed to load input file: {input_path:?}"))?;
 
             tracing::debug!("Running program execution");
             let (session_stats, exec_elapsed_secs) = prove_bonsai(
@@ -82,7 +98,8 @@ impl BenchArgs {
                 input.clone(),
                 true,
             )
-            .await.context("Execution failed")?;
+            .await
+            .context("Execution failed")?;
 
             let prove_elapsed_secs = if self.exec_only {
                 tracing::debug!("Exec only, skipping proof generation");
@@ -96,7 +113,8 @@ impl BenchArgs {
                     input.clone(),
                     self.exec_only,
                 )
-                .await.context("Proving failed")?
+                .await
+                .context("Proving failed")?
                 .1
             };
 
@@ -128,6 +146,8 @@ impl BenchArgs {
             count += 1;
         }
 
+        print_bench_summary(&res);
+
         if let Some(out_path) = self.json.clone() {
             let out_str = serde_json::to_string_pretty(&res)?;
             write(&out_path, &out_str).await?;
@@ -139,6 +159,17 @@ impl BenchArgs {
 }
 
 fn print_bench_result(bench_result: &BenchResult) {
-    let table_config = Settings::default().with(Rotate::Left);
+    let table_config = Settings::default()
+        .with(Style::modern())
+        .with(Reverse::columns(0))
+        .with(Rotate::Left);
     println!("{}", Table::new(vec![bench_result]).with(table_config));
+}
+
+fn print_bench_summary(results: &[BenchResult]) {
+    let avg_exec_mhz = results.iter().fold(0.0, |acc, x| acc + x.exec_khz) / results.len() as f64;
+    let avg_prove_mhz = results.iter().fold(0.0, |acc, x| acc + x.prove_khz) / results.len() as f64;
+
+    println!("Average Exec Mhz: {avg_exec_mhz}");
+    println!("Average Prove Mhz: {avg_prove_mhz}");
 }
