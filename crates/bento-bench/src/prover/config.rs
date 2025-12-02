@@ -3,13 +3,6 @@ use boundless_market::Deployment;
 use clap::Args;
 use url::Url;
 
-/// Top-level configuration for bencher
-#[derive(Debug, Clone, Default)]
-pub struct Config {
-    /// Prover configuration
-    pub prover: Option<ProverConfig>,
-}
-
 /// Configuration options for commands that utilize proving.
 #[derive(Args, Debug, Clone)]
 pub struct ProverConfig {

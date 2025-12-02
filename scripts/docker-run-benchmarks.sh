@@ -2,14 +2,9 @@
 
 set -eu
 
-BENCHER_CMD=/app/bencher
+MANIFEST_PATH=/manifest.json
 DATA_DIR=/data
 
-for elf_file in "$DATA_DIR"/*.elf; do
-    id="$(basename "$elf_file" .elf)"
-    in_file="${elf_file%.elf}.input"
-
-    echo "Running benchmark: $id"
-
-    "$BENCHER_CMD" bench -f "$elf_file" -i "$in_file"
-done
+/app/bento-bench run \
+    --manifest "$MANIFEST_PATH" \
+    --data-dir "$DATA_DIR"
