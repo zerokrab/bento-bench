@@ -7,16 +7,18 @@ use tokio::fs::write;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Manifest {
     pub description: String,
-    pub entries: Vec<ManifestEntryV2>,
+    pub entries: Vec<ManifestEntry>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ManifestEntryV2 { // TODO: Rename once other impl is removed
+pub struct ManifestEntry {
     /// Description of the request
     pub description: String,
     /// Proof request id to fetch.
     pub request_id: Option<U256>,
+    /// Hash of input
     pub input_id: Option<String>,
+    /// Image ID
     pub image_id: Option<String>,
 }
 

@@ -1,6 +1,6 @@
-use crate::commands::refactor::CommonArgs;
-use crate::commands::refactor::manifest::{ManifestEntryV2, load_manifest, write_manifest};
-use crate::commands::refactor::prepare::{get_filename_without_extension, save_input};
+use crate::commands::CommonArgs;
+use crate::commands::manifest::{ManifestEntry, load_manifest, write_manifest};
+use crate::commands::prepare::{get_filename_without_extension, save_input};
 use anyhow::{Context, Result, anyhow};
 use clap::Args;
 use std::path::PathBuf;
@@ -27,7 +27,7 @@ pub struct PrepareLocalArgs {
 }
 
 impl PrepareLocalArgs {
-    pub(crate) async fn run(&self) -> Result<()> {
+    pub async fn run(&self) -> Result<()> {
         let data_dir = self.common.data_dir.clone();
 
         let mut manifest = load_manifest(&self.common.manifest_path)?;
@@ -73,7 +73,7 @@ impl PrepareLocalArgs {
         fs::copy(input_in_path, input_out_path).await?;
         fs::copy(image_in_path, image_out_path).await?;
 
-        let entry = ManifestEntryV2 {
+        let entry = ManifestEntry {
             description: self.description.clone(),
             request_id: None,
             input_id: Some(input_id),

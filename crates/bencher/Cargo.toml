@@ -4,15 +4,14 @@ version = { workspace = true }
 edition = { workspace = true }
 
 [[bin]]
-name = "bencher"
-path = "src/bin/bencher.rs"
+name = "bento-bench"
+path = "src/bin/bento_bench.rs"
 
 [dependencies]
 anyhow = { workspace = true }
 bonsai-sdk = { workspace = true }
 boundless-market = { workspace = true }
 clap = { workspace = true, features = ["env", "derive"] }
-derive_more = { workspace = true }
 hex = { workspace = true }
 risc0-zkvm = { workspace = true }
 serde = { workspace = true }
@@ -22,6 +21,5 @@ tracing-subscriber = { workspace = true, features = ["env-filter"] }
 alloy = "1.0.41"
 sqlx = { version = "0.8.6", features = ["postgres", "sqlite", "runtime-tokio", "migrate", "uuid", "time"] }
 serde_json = "1.0.104"
-uuid = { workspace = true, features = ["serde", "v4"] }
 tabled = "0.20.0"
 url.workspace = true

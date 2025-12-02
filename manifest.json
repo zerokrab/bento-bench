@@ -2,14 +2,16 @@
   "description": "Some info about this bench suite",
   "entries": [
     {
-      "description": "An on-chain request - 42M",
-      "image": "34a5c9394fb2fd3298ece07c16ec2ed009f6029a360f90f4e93933b55e2184d4",
-      "input": "8b7df143d91c716ecfa5fc1730022f6b421b05cedee8fd52b1fc65a96030ad52"
+      "description": "Order 0xe198c6944cae382902a375b0b8673084270a7f8e48fab626 (45m)",
+      "request_id": "0xe198c6944cae382902a375b0b8673084270a7f8e48fab626",
+      "input_id": "2a9ee6d23ada02a9b840c628160a7a438aa9c97b09d515dd5aeaca2c3e5ffc21",
+      "image_id": "34a5c9394fb2fd3298ece07c16ec2ed009f6029a360f90f4e93933b55e2184d4"
     },
     {
-      "description": "A custom image - 42M",
-      "image": "34a5c9394fb2fd3298ece07c16ec2ed009f6029a360f90f4e93933b55e2184d4",
-      "input": "8b7df143d91c716ecfa5fc1730022f6b421b05cedee8fd52b1fc65a96030ad52"
+      "description": "Order 0xe198c6944cae382902a375b0b8673084270a7f8e48fab626 (45m)",
+      "request_id": "0xe198c6944cae382902a375b0b8673084270a7f8e48fab626",
+      "input_id": "2a9ee6d23ada02a9b840c628160a7a438aa9c97b09d515dd5aeaca2c3e5ffc21",
+      "image_id": "34a5c9394fb2fd3298ece07c16ec2ed009f6029a360f90f4e93933b55e2184d4"
     }
   ]
 }

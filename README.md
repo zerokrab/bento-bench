@@ -1,49 +1,58 @@
-# Bento Utils
+# bento-bench
 
-## Preparing a manifest
+## Installing
 
-This will take your manifest, fetch the image and inputs if `image_id` isn't specified.
-Create a new directory in the project root called data. Then make a file called `manifest.json`. Here is an example:
+### Binaries
 
-```json
-{
-    "notes": "Some info about this bench suite",
-    "entries": [
-        {
-            "image_id": "34a5c9394fb2fd3298ece07c16ec2ed009f6029a360f90f4e93933b55e2184d4",
-            "request_id": "0xe198c6944cae382902a375b0b8673084270a7f8e56e8883e",
-            "description": "42M",
-            "label": "onchain-order-generator"
-        },
-        {
-            "image_id": "34a5c9394fb2fd3298ece07c16ec2ed009f6029a360f90f4e93933b55e2184d4",
-            "request_id": "0xc197ebe12c7bcf1d9f3b415342bdbc795425335c11a49e11",
-            "description": "347M",
-            "label": "offchain-order-generator"
-        },
-        {
-            "image_id": "34a5c9394fb2fd3298ece07c16ec2ed009f6029a360f90f4e93933b55e2184d4",
-            "request_id": "0xc197ebe12c7bcf1d9f3b415342bdbc795425335c8ad8091d",
-            "description": "147M",
-            "label": "offchain-order-generator"
-        }
-    ]
-}
+WIP
+
+### Build from source
+```shell
+git clone github.com/2boys1proof/bento-bench
+cd bento-bench
+cargo build --release
 ```
 
-Then run `cargo run --  datasheet prepare`. In addition to downloading the images and inputs, it will also save this information to sqlite so that reports can be generated.
 
-A UUID will be generated for this manifest and stored into the db. Also a `manifest-<UUID>.json` will be made too with information liek the image\_id filled in if you didn't do so before.
+## Running Benchmarks
 
-## Benching against a Bento Cluster
+> WIP - suites will be provided soon.
 
-To bench against Bento, run `cargo run --  datasheet bench`. Every run of this command will be uniquely identified by a UUID.
+Once you have a manifest and data directory, benchmarks can be run with
+```shell
+bento-bench run \
+    --manifest manifest.json \
+    --data-dir ./data
+```
 
-The output of this is a file called `datasheet-<UUID>.json` as well, it is saved into the database, so you can actually get rid of all json files when theyre not needed as long as you keep the database.
+To configure the bento backend, see `bento-bench run --help`.
 
-## Misc
+## Creating Benchmarks
 
-* `cargo run --  datasheet db` - view manifests and datasheets that are saved in the db.
+### Fetching Market Requests
+
+```shell
+bento-bench prepare-request \
+    --manifest manifest.json \
+    --request-id 0x1234...ABCD \
+    --description "A simple request (500M)" \
+    --data-dir ./data
+    --rpc-url "http://node:8545"
+```
+
+This will fetch and save the image and input to the data dir, and append them to the manifest.
+
+### Import Local Images/Inputs
+
+```shell
+bento-bench prepare-local \
+    --manifest manifest.json \
+    --image /path/to/image \
+    --input <input string> \ # Or --input-path to load from file
+    --description "A local benchmark (1B)"
+    --data-dir ./data
+```
+This will copy the provided image/input into the data dir, and append them to the manifest
 
 ## Docker
 

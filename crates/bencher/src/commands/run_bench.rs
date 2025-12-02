@@ -1,6 +1,6 @@
 use crate::ProverConfig;
-use crate::commands::refactor::CommonArgs;
-use crate::commands::refactor::manifest::load_manifest;
+use crate::commands::CommonArgs;
+use crate::commands::manifest::load_manifest;
 use crate::prove::prove_bonsai;
 use anyhow::{Context, Result};
 use bonsai_sdk::non_blocking::Client as BonsaiClient;
@@ -12,7 +12,7 @@ use tabled::{Table, Tabled};
 use tokio::fs::write;
 
 #[derive(Args, Clone, Debug)]
-pub struct BenchArgs {
+pub struct RunArgs {
     #[clap(flatten)]
     common: CommonArgs,
     /// Execute only (no prove)
@@ -48,7 +48,7 @@ pub struct BenchResult {
     pub prove_khz: f64,
 }
 
-impl BenchArgs {
+impl RunArgs {
     pub async fn run(&self) -> Result<()> {
         let manifest = load_manifest(&self.common.manifest_path)?;
 

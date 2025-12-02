@@ -1,6 +1,6 @@
-use crate::commands::refactor::CommonArgs;
-use crate::commands::refactor::manifest::{ManifestEntryV2, load_manifest, write_manifest};
-use crate::commands::refactor::prepare::{fetch_image, fetch_input};
+use crate::commands::CommonArgs;
+use crate::commands::manifest::{ManifestEntry, load_manifest, write_manifest};
+use crate::commands::prepare::{fetch_image, fetch_input};
 use alloy::primitives::U256;
 use anyhow::{Context, Result};
 use boundless_market::Client;
@@ -24,7 +24,7 @@ pub struct PrepareRequestArgs {
 }
 
 impl PrepareRequestArgs {
-    pub(crate) async fn run(&self) -> Result<()> {
+    pub async fn run(&self) -> Result<()> {
         let data_dir = self.common.data_dir.clone();
 
         let mut manifest = load_manifest(&self.common.manifest_path)?;
@@ -55,7 +55,7 @@ impl PrepareRequestArgs {
         let image_id = fetch_image(&request.imageUrl, &images_dir).await?;
         let input_id = fetch_input(&request, &inputs_dir).await?;
 
-        let entry = ManifestEntryV2 {
+        let entry = ManifestEntry {
             image_id: Some(image_id),
             input_id: Some(input_id),
             description: self.description.clone(),
