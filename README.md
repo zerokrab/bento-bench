@@ -57,6 +57,6 @@ This will copy the provided image/input into the data dir, and append them to th
 ## Docker
 
 ```shell
-docker run --mount <data-path>:/data <manifest-path>:/manifest.json ghcr.io/2boys1proof/bencher bench 
+docker run --mount <data-path>:/data <manifest-path>:/manifest.json ghcr.io/2boys1proof/bento-bench 
 ```
 

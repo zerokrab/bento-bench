@@ -1,5 +1,5 @@
 use anyhow::Result;
-use bencher::commands::Cli;
+use bento_bench::commands::Cli;
 use clap::Parser;
 use tracing_subscriber::EnvFilter;
 

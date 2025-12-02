@@ -1,5 +1,5 @@
 [package]
-name = "bencher"
+name = "bento-bench"
 version = { workspace = true }
 edition = { workspace = true }
 
