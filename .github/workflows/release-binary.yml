@@ -8,6 +8,7 @@ on:
 
 env:
   BINARY_NAME: bento-bench
+  PACKAGE_NAME: bento-bench
 
 jobs:
   build-and-release:
@@ -33,7 +34,7 @@ jobs:
 
       - name: Build Rust binary
         run: |
-          cargo build --release -p bencher --bin ${{ env.BINARY_NAME }}
+          cargo build --release -p ${{ env.PACKAGE_NAME }} --bin ${{ env.BINARY_NAME }}
 
       - name: Get short SHA
         id: sha
