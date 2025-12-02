@@ -6,5 +6,5 @@ MANIFEST_PATH=/manifest.json
 DATA_DIR=/data
 
 /app/bento-bench run \
-    --manifest /manifest.json
-    --data-dir /data
+    --manifest "$MANIFEST_PATH" \
+    --data-dir "$DATA_DIR"
