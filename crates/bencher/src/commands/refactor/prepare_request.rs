@@ -1,27 +1,23 @@
+use crate::commands::refactor::CommonArgs;
 use crate::commands::refactor::manifest::{ManifestEntryV2, load_manifest, write_manifest};
 use crate::commands::refactor::prepare::{fetch_image, fetch_input};
 use alloy::primitives::U256;
 use anyhow::{Context, Result};
 use boundless_market::Client;
 use clap::Args;
-use std::path::PathBuf;
 use tokio::fs::create_dir_all;
 use url::Url;
 
 #[derive(Args, Clone, Debug)]
 pub struct PrepareRequestArgs {
-    /// Path to manifest file
-    #[clap(long = "manifest", default_value = "./manifest.json")]
-    manifest_path: PathBuf,
+    #[clap(flatten)]
+    common: CommonArgs,
     /// Request ID to fetch
     #[clap(long)]
     request_id: U256,
     /// Description of the request/image/input
     #[clap(long)]
     description: String,
-    /// Directory to store inputs/images
-    #[clap(long)]
-    data_dir: PathBuf,
     /// RPC endpoint to query the request info
     #[clap(long, env)]
     rpc_url: Url,
@@ -29,9 +25,9 @@ pub struct PrepareRequestArgs {
 
 impl PrepareRequestArgs {
     pub(crate) async fn run(&self) -> Result<()> {
-        let data_dir = self.data_dir.clone();
+        let data_dir = self.common.data_dir.clone();
 
-        let mut manifest = load_manifest(&self.manifest_path)?;
+        let mut manifest = load_manifest(&self.common.manifest_path)?;
 
         let images_dir = data_dir.join("images");
         create_dir_all(&images_dir).await.context(format!(
@@ -68,7 +64,7 @@ impl PrepareRequestArgs {
 
         manifest.entries.push(entry);
 
-        write_manifest(&manifest, &self.manifest_path).await?;
+        write_manifest(&manifest, &self.common.manifest_path).await?;
 
         Ok(())
     }

@@ -3,6 +3,7 @@ use crate::commands::refactor::prepare_local::PrepareLocalArgs;
 use crate::commands::refactor::prepare_request::PrepareRequestArgs;
 use anyhow::Result;
 use clap::{Args, Subcommand};
+use std::path::PathBuf;
 
 mod bench;
 mod prepare;
@@ -15,6 +16,16 @@ mod manifest;
 pub struct RefactorArgs {
     #[command(subcommand)]
     pub command: Refactor,
+}
+
+#[derive(Args, Clone, Debug)]
+pub struct CommonArgs {
+    /// Path to manifest file
+    #[clap(long = "manifest", default_value = "./manifest.json")]
+    manifest_path: PathBuf,
+    /// Directory to load images/inputs from
+    #[clap(long, default_value = "./data")]
+    data_dir: PathBuf,
 }
 
 #[derive(Subcommand, Clone, Debug)]

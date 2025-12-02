@@ -1,3 +1,4 @@
+use crate::commands::refactor::CommonArgs;
 use crate::commands::refactor::manifest::{ManifestEntryV2, load_manifest, write_manifest};
 use crate::commands::refactor::prepare::{get_filename_without_extension, save_input};
 use anyhow::{Context, Result, anyhow};
@@ -9,9 +10,8 @@ use tokio::fs::create_dir_all;
 
 #[derive(Args, Clone, Debug)]
 pub struct PrepareLocalArgs {
-    /// Path to manifest file
-    #[clap(long = "manifest", default_value = "./manifest.json")]
-    manifest_path: PathBuf,
+    #[clap(flatten)]
+    common: CommonArgs,
     /// Description of the image/input
     #[clap(long)]
     description: String,
@@ -24,16 +24,13 @@ pub struct PrepareLocalArgs {
     /// Path to input file
     #[clap(long)]
     input_path: Option<PathBuf>,
-    /// Directory to store inputs/images
-    #[clap(long)]
-    data_dir: PathBuf,
 }
 
 impl PrepareLocalArgs {
     pub(crate) async fn run(&self) -> Result<()> {
-        let data_dir = self.data_dir.clone();
+        let data_dir = self.common.data_dir.clone();
 
-        let mut manifest = load_manifest(&self.manifest_path)?;
+        let mut manifest = load_manifest(&self.common.manifest_path)?;
 
         let images_dir = data_dir.join("images");
         create_dir_all(&images_dir).await.context(format!(
@@ -85,7 +82,7 @@ impl PrepareLocalArgs {
 
         manifest.entries.push(entry);
 
-        write_manifest(&manifest, &self.manifest_path).await?;
+        write_manifest(&manifest, &self.common.manifest_path).await?;
 
         Ok(())
     }

@@ -1,4 +1,5 @@
 use crate::ProverConfig;
+use crate::commands::refactor::CommonArgs;
 use crate::commands::refactor::manifest::load_manifest;
 use crate::prove::prove_bonsai;
 use anyhow::{Context, Result};
@@ -12,12 +13,8 @@ use tokio::fs::write;
 
 #[derive(Args, Clone, Debug)]
 pub struct BenchArgs {
-    /// Path to manifest file
-    #[clap(long = "manifest", default_value = "./manifest.json")]
-    manifest_path: PathBuf,
-    /// Directory to load images/inputs from
-    #[clap(long)]
-    data_dir: PathBuf,
+    #[clap(flatten)]
+    common: CommonArgs,
     /// Execute only (no prove)
     #[clap(long, default_value_t = false)]
     exec_only: bool,
@@ -53,7 +50,7 @@ pub struct BenchResult {
 
 impl BenchArgs {
     pub async fn run(&self) -> Result<()> {
-        let manifest = load_manifest(&self.manifest_path)?;
+        let manifest = load_manifest(&self.common.manifest_path)?;
 
         self.prover_config
             .proving_backend
@@ -62,7 +59,7 @@ impl BenchArgs {
         // Currently only support Bento, not default prover
         let prover: BonsaiClient = BonsaiClient::from_env(risc0_zkvm::VERSION)?;
 
-        let data_dir = self.data_dir.clone();
+        let data_dir = self.common.data_dir.clone();
         let images_dir = data_dir.join("images");
         let inputs_dir = data_dir.join("inputs");
 
