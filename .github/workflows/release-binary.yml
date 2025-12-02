@@ -1,0 +1,64 @@
+name: Release Binary
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  BINARY_NAME: bento-bench
+  PACKAGE_NAME: bento-bench
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-22.04
+    permissions:
+      packages: write
+      contents: write
+
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v5
+
+      - name: Install sccache
+        uses: mozilla-actions/sccache-action@v0.0.9
+
+      - name: Configure sccache
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Rust binary
+        run: |
+          cargo build --release -p ${{ env.PACKAGE_NAME }} --bin ${{ env.BINARY_NAME }}
+
+      - name: Get short SHA
+        id: sha
+        run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: main-${{ steps.sha.outputs.sha }}
+          release_name: Release main-${{ steps.sha.outputs.sha }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./target/release/${{ env.BINARY_NAME }}
+          asset_name: ${{ env.BINARY_NAME }}
+          asset_content_type: application/octet-stream
+
+      - name: Show sccache stats
+        run: sccache --show-stats
