@@ -4,19 +4,28 @@
 
 ### Binaries
 
-WIP
+See [releases](https://github.com/2Boys1Proof/bento-bench/releases).
 
-### Build from source
+### Build From Source
 ```shell
 git clone github.com/2boys1proof/bento-bench
 cd bento-bench
 cargo build --release
 ```
 
-
 ## Running Benchmarks
 
-> WIP - suites will be provided soon.
+A collection of prepared suites are available:
+
+| Description                               | Link                                                                               |   
+|-------------------------------------------|------------------------------------------------------------------------------------|
+| Order Generator (Varying sizes, 49m-3.9B) | [Link](https://boundless-benchmarks.mintybasil.dev/suites/og-suite-varied.tar.zst) |
+| (Coming soon..)                           |                                                                                    |
+
+To fetch and untar:
+```shell
+curl <link> | tar -xv
+```
 
 Once you have a manifest and data directory, benchmarks can be run with
 ```shell
@@ -26,6 +35,13 @@ bento-bench run \
 ```
 
 To configure the bento backend, see `bento-bench run --help`.
+
+## Docker
+
+```shell
+docker run --mount <data-path>:/data <manifest-path>:/manifest.json ghcr.io/2boys1proof/bento-bench 
+```
+
 
 ## Creating Benchmarks
 
@@ -54,9 +70,12 @@ bento-bench prepare-local \
 ```
 This will copy the provided image/input into the data dir, and append them to the manifest
 
-## Docker
+## Uploading Suites
+
+To tar and upload a manifest and data dir, run:
 
 ```shell
-docker run --mount <data-path>:/data <manifest-path>:/manifest.json ghcr.io/2boys1proof/bento-bench 
+R2_ACCESS_KEY=<key> \
+R2_SECRET_KEY=<secret-key \
+./scripts/upload-suite.sh <suite-name>
 ```
-
