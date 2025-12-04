@@ -24,7 +24,7 @@ A collection of prepared suites are available:
 
 To fetch and untar:
 ```shell
-curl <link> | tar -xv
+curl <link> | tar -xv --zstd
 ```
 
 Once you have a manifest and data directory, benchmarks can be run with
@@ -34,7 +34,7 @@ bento-bench run \
     --data-dir ./data
 ```
 
-To configure the bento backend, see `bento-bench run --help`.
+To configure the bento backend, see `bento-bench run --help`. The summary of the benchmarks can be outputted to a json file with `--json <path>`.
 
 ## Docker
 

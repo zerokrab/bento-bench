@@ -1,14 +1,14 @@
-use crate::commands::run_bench::RunArgs;
 use crate::commands::prepare_local::PrepareLocalArgs;
 use crate::commands::prepare_request::PrepareRequestArgs;
+use crate::commands::run_bench::RunArgs;
 use anyhow::Result;
 use clap::{Args, Parser, Subcommand};
 use std::path::PathBuf;
 
-mod run_bench;
 mod prepare;
 mod prepare_local;
 mod prepare_request;
+mod run_bench;
 
 mod manifest;
 
