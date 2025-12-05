@@ -2,9 +2,8 @@
 
 set -ux
 
-DATA_DIR=./data
-MANIFEST=./manifest.json
-SUITE_NAME=$1
+DATA_DIR=$1
+SUITE_NAME=$2
 TAR_FILE="$SUITE_NAME".tar.zst
 
 R2_ENDPOINT="https://31470fca903ed77d898151ffc4a2a807.r2.cloudflarestorage.com/"

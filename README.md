@@ -45,6 +45,8 @@ docker run --mount <data-path>:/data ghcr.io/2boys1proof/bento-bench
 
 ## Creating Benchmarks
 
+> Note: On first run, if no manifest exists one will be created with an empty description.
+
 ### Fetching Market Requests
 
 ```shell
@@ -70,10 +72,10 @@ This will copy the provided image/input into the data dir, and append them to th
 
 ## Uploading Suites
 
-To tar and upload a data dir, run:
+To tar and upload a data dir to an R2/S3 bucket, run:
 
 ```shell
 R2_ACCESS_KEY=<key> \
 R2_SECRET_KEY=<secret-key \
-./scripts/upload-suite.sh <suite-name>
+./scripts/upload-suite.sh <data-dir> <suite-name>
 ```
