@@ -55,8 +55,8 @@ impl PrepareRequestArgs {
         let image_id = fetch_image(&request.imageUrl, &images_dir).await?;
         let input_id = fetch_input(&request, &inputs_dir).await?;
 
-        let input_path = inputs_dir.join(&input_id);
-        let image_path = images_dir.join(&image_id);
+        let image_path = images_dir.join(format!("{}.elf", image_id));
+        let input_path = inputs_dir.join(format!("{}.input", input_id));
 
         let cycles = compute_cycles(&input_path, &image_path).await?;
 

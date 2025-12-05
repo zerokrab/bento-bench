@@ -63,14 +63,15 @@ pub fn get_filename_without_extension(path: &PathBuf) -> Option<String> {
 }
 
 pub async fn compute_cycles(input_in_path: &PathBuf, image_in_path: &PathBuf) -> Result<u64> {
-    let input = GuestEnv::decode(fs::read_to_string(&input_in_path).await?.as_ref())
-        .context("Failed to load input")?;
-    let image = fs::read_to_string(&image_in_path)
+    let input = fs::read(&input_in_path).await.context("Failed to load input")?;
+
+    let image = fs::read(&image_in_path)
         .await
         .context("Failed to load image")?;
 
+    let env = ExecutorEnv::builder().write_slice(&input).build()?;
     let executor = default_executor();
-    let session = executor.execute(ExecutorEnv::try_from(input)?, image.as_ref()).context("Execution failed")?;
+    let session = executor.execute(env, &image).context("Execution failed")?;
 
     Ok(session.cycles())
 }
