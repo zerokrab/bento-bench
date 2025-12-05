@@ -48,24 +48,30 @@ pub struct BenchResult {
     pub prove_khz: f64,
 }
 
-#[derive(Tabled, Serialize, Debug)]
+#[derive(Tabled, Serialize, Debug, Clone)]
 pub struct BenchSummary {
     #[tabled(rename = "Exec Min KHz")]
-    pub exec_min_khz: f64,
+    pub exec_min_khz: u32,
     #[tabled(rename = "Exec Max KHz")]
-    pub exec_max_khz: f64,
+    pub exec_max_khz: u32,
     #[tabled(rename = "Exec Avg KHz")]
-    pub exec_avg_khz: f64,
+    pub exec_avg_khz: u32,
     #[tabled(rename = "Exec Median KHz")]
-    pub exec_median_khz: f64,
+    pub exec_median_khz: u32,
     #[tabled(rename = "Prove Min KHz")]
-    pub prove_min_khz: f64,
+    pub prove_min_khz: u32,
     #[tabled(rename = "Prove Max KHz")]
-    pub prove_max_khz: f64,
+    pub prove_max_khz: u32,
     #[tabled(rename = "Prove Avg KHz")]
-    pub prove_avg_khz: f64,
+    pub prove_avg_khz: u32,
     #[tabled(rename = "Prove Median KHz")]
-    pub prove_median_khz: f64,
+    pub prove_median_khz: u32,
+}
+
+#[derive(Serialize)]
+pub struct BenchJsonOutput {
+    runs: Vec<BenchResult>,
+    summary: BenchSummary,
 }
 
 impl RunArgs {
@@ -87,7 +93,10 @@ impl RunArgs {
         let mut count = 1;
         let total = manifest.entries.len();
         for entry in manifest.entries.iter() {
-            tracing::info!("Running benchmark {count} of {total} - {0}...", entry.description);
+            tracing::info!(
+                "Running benchmark {count} of {total} - {0}...",
+                entry.description
+            );
             let image_id = entry
                 .image_id
                 .clone()
@@ -165,16 +174,11 @@ impl RunArgs {
 
         let summary = get_bench_summary(&res);
 
-        let table_config = Settings::default()
-            .with(Style::modern())
-            .with(Reverse::columns(0))
-            .with(Rotate::Left);
-        println!("{}", Table::new(vec![&summary]).with(table_config));
+        print_bench_summary(&summary);
 
-        if let Some(out_path) = self.json.clone() {
-            let out_str = serde_json::to_string_pretty(&summary)?;
-            write(&out_path, &out_str).await?;
-            tracing::info!("Wrote summary to {:?}", out_path);
+        if let Some(json_path) = self.json.clone() {
+            save_json(&json_path, res, &summary).await?;
+            tracing::info!("Wrote summary to {:?}", json_path);
         }
 
         Ok(())
@@ -187,6 +191,15 @@ fn print_bench_result(bench_result: &BenchResult) {
         .with(Reverse::columns(0))
         .with(Rotate::Left);
     println!("{}", Table::new(vec![bench_result]).with(table_config));
+}
+
+fn print_bench_summary(bench_summary: &BenchSummary) {
+    let table_config = Settings::default()
+        .with(Style::modern())
+        .with(Reverse::columns(0))
+        .with(Rotate::Left);
+
+    println!("{}", Table::new(vec![bench_summary]).with(table_config));
 }
 
 fn get_bench_summary(results: &[BenchResult]) -> BenchSummary {
@@ -203,14 +216,14 @@ fn get_bench_summary(results: &[BenchResult]) -> BenchSummary {
     let median_prove_khz = median(&mut prove_res.clone()).unwrap_or(0.0);
 
     BenchSummary {
-        exec_min_khz: min_exec_khz,
-        exec_max_khz: max_exec_khz,
-        exec_avg_khz: avg_exec_khz,
-        exec_median_khz: median_exec_khz,
-        prove_min_khz: min_prove_khz,
-        prove_max_khz: max_prove_khz,
-        prove_avg_khz: avg_prove_khz,
-        prove_median_khz: median_prove_khz,
+        exec_min_khz: min_exec_khz as u32,
+        exec_max_khz: max_exec_khz as u32,
+        exec_avg_khz: avg_exec_khz as u32,
+        exec_median_khz: median_exec_khz as u32,
+        prove_min_khz: min_prove_khz as u32,
+        prove_max_khz: max_prove_khz as u32,
+        prove_avg_khz: avg_prove_khz as u32,
+        prove_median_khz: median_prove_khz as u32,
     }
 }
 
@@ -231,4 +244,19 @@ fn median(values: &mut Vec<f64>) -> Option<f64> {
         // Odd number of elements: return the middle value
         Some(values[mid])
     }
+}
+
+async fn save_json(
+    out_path: &PathBuf,
+    runs: Vec<BenchResult>,
+    summary: &BenchSummary,
+) -> Result<()> {
+    let out = BenchJsonOutput {
+        runs,
+        summary: summary.clone(),
+    };
+    let out_str = serde_json::to_string_pretty(&out)?;
+    write(&out_path, &out_str).await?;
+
+    Ok(())
 }
