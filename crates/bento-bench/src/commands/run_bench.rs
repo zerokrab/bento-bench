@@ -76,7 +76,7 @@ pub struct BenchJsonOutput {
 
 impl RunArgs {
     pub async fn run(&self) -> Result<()> {
-        let manifest = load_manifest(&self.common.manifest_path)?;
+        let manifest = load_manifest(&self.common.data_dir)?;
 
         self.prover_config
             .proving_backend

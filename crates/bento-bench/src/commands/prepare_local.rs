@@ -30,7 +30,7 @@ impl PrepareLocalArgs {
     pub async fn run(&self) -> Result<()> {
         let data_dir = self.common.data_dir.clone();
 
-        let mut manifest = load_manifest(&self.common.manifest_path)?;
+        let mut manifest = load_manifest(&self.common.data_dir)?;
 
         let images_dir = data_dir.join("images");
         create_dir_all(&images_dir).await.context(format!(
@@ -82,7 +82,7 @@ impl PrepareLocalArgs {
 
         manifest.entries.push(entry);
 
-        write_manifest(&manifest, &self.common.manifest_path).await?;
+        write_manifest(&manifest, &self.common.data_dir).await?;
 
         Ok(())
     }

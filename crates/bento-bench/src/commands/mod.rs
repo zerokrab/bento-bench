@@ -31,9 +31,6 @@ pub enum Command {
 
 #[derive(Args, Clone, Debug)]
 pub struct CommonArgs {
-    /// Path to manifest file
-    #[clap(long = "manifest", default_value = "./manifest.json")]
-    manifest_path: PathBuf,
     /// Directory to load images/inputs from
     #[clap(long, default_value = "./data")]
     data_dir: PathBuf,
