@@ -87,7 +87,7 @@ impl RunArgs {
         let mut count = 1;
         let total = manifest.entries.len();
         for entry in manifest.entries.iter() {
-            tracing::info!("Running benchmark {count} of {total}...");
+            tracing::info!("Running benchmark {count} of {total} - {0}...", entry.description);
             let image_id = entry
                 .image_id
                 .clone()
