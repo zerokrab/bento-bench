@@ -17,14 +17,15 @@ cargo build --release
 
 A collection of prepared suites are available:
 
-| Description                               | Link                                                                               |   
-|-------------------------------------------|------------------------------------------------------------------------------------|
-| Order Generator (Varying sizes, 49m-3.9B) | [Link](https://boundless-benchmarks.mintybasil.dev/suites/og-suite-varied.tar.zst) |
-| (Coming soon..)                           |                                                                                    |
+| Description                               | Link                                                                              |   
+|-------------------------------------------|-----------------------------------------------------------------------------------|
+| Order Generator (Tiny, 1M-10M)            | https://boundless-benchmarks.mintybasil.dev/suites/og-suite-tiny_1m-10m.tar.zst   |
+| Order Generator (Small, 100M-1B)          | https://boundless-benchmarks.mintybasil.dev/suites/og-suite-small_100m-1b.tar.zst |
+| Order Generator (Varying sizes, 49M-3.9B) | https://boundless-benchmarks.mintybasil.dev/suites/og-suite-varied_49m-4b.tar.zst |
 
 To fetch and untar:
 ```shell
-curl <link> | tar -xv
+curl <link> | tar -xv --zstd
 ```
 
 Once you have a manifest and data directory, benchmarks can be run with
@@ -34,7 +35,7 @@ bento-bench run \
     --data-dir ./data
 ```
 
-To configure the bento backend, see `bento-bench run --help`.
+To configure the bento backend, see `bento-bench run --help`. The summary of the benchmarks can be outputted to a json file with `--json <path>`.
 
 ## Docker
 

@@ -14,5 +14,7 @@ Cargo.lock
 
 *.elf
 *.input
+*.tar.zst
+manifest.json
 
 data/

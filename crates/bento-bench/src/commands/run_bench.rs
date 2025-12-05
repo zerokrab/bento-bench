@@ -18,7 +18,7 @@ pub struct RunArgs {
     /// Execute only (no prove)
     #[clap(long, default_value_t = false)]
     exec_only: bool,
-    /// Output results to json file
+    /// Output summary to json file
     #[clap(long)]
     json: Option<PathBuf>,
 
@@ -48,6 +48,32 @@ pub struct BenchResult {
     pub prove_khz: f64,
 }
 
+#[derive(Tabled, Serialize, Debug, Clone)]
+pub struct BenchSummary {
+    #[tabled(rename = "Exec Min KHz")]
+    pub exec_min_khz: u32,
+    #[tabled(rename = "Exec Max KHz")]
+    pub exec_max_khz: u32,
+    #[tabled(rename = "Exec Avg KHz")]
+    pub exec_avg_khz: u32,
+    #[tabled(rename = "Exec Median KHz")]
+    pub exec_median_khz: u32,
+    #[tabled(rename = "Prove Min KHz")]
+    pub prove_min_khz: u32,
+    #[tabled(rename = "Prove Max KHz")]
+    pub prove_max_khz: u32,
+    #[tabled(rename = "Prove Avg KHz")]
+    pub prove_avg_khz: u32,
+    #[tabled(rename = "Prove Median KHz")]
+    pub prove_median_khz: u32,
+}
+
+#[derive(Serialize)]
+pub struct BenchJsonOutput {
+    runs: Vec<BenchResult>,
+    summary: BenchSummary,
+}
+
 impl RunArgs {
     pub async fn run(&self) -> Result<()> {
         let manifest = load_manifest(&self.common.manifest_path)?;
@@ -67,7 +93,10 @@ impl RunArgs {
         let mut count = 1;
         let total = manifest.entries.len();
         for entry in manifest.entries.iter() {
-            tracing::info!("Running benchmark {count} of {total}...");
+            tracing::info!(
+                "Running benchmark {count} of {total} - {0}...",
+                entry.description
+            );
             let image_id = entry
                 .image_id
                 .clone()
@@ -143,12 +172,13 @@ impl RunArgs {
             count += 1;
         }
 
-        print_bench_summary(&res);
+        let summary = get_bench_summary(&res);
 
-        if let Some(out_path) = self.json.clone() {
-            let out_str = serde_json::to_string_pretty(&res)?;
-            write(&out_path, &out_str).await?;
-            tracing::info!("Wrote results to {:?}", out_path);
+        print_bench_summary(&summary);
+
+        if let Some(json_path) = self.json.clone() {
+            save_json(&json_path, res, &summary).await?;
+            tracing::info!("Wrote summary to {:?}", json_path);
         }
 
         Ok(())
@@ -163,10 +193,70 @@ fn print_bench_result(bench_result: &BenchResult) {
     println!("{}", Table::new(vec![bench_result]).with(table_config));
 }
 
-fn print_bench_summary(results: &[BenchResult]) {
-    let avg_exec_mhz = results.iter().fold(0.0, |acc, x| acc + x.exec_khz) / results.len() as f64;
-    let avg_prove_mhz = results.iter().fold(0.0, |acc, x| acc + x.prove_khz) / results.len() as f64;
+fn print_bench_summary(bench_summary: &BenchSummary) {
+    let table_config = Settings::default()
+        .with(Style::modern())
+        .with(Reverse::columns(0))
+        .with(Rotate::Left);
 
-    println!("Average Exec Mhz: {avg_exec_mhz}");
-    println!("Average Prove Mhz: {avg_prove_mhz}");
+    println!("{}", Table::new(vec![bench_summary]).with(table_config));
+}
+
+fn get_bench_summary(results: &[BenchResult]) -> BenchSummary {
+    let exec_res: Vec<f64> = results.iter().map(|r| r.exec_khz).collect();
+    let min_exec_khz = exec_res.iter().fold(f64::INFINITY, |a, &b| a.min(b));
+    let max_exec_khz = exec_res.iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
+    let avg_exec_khz = exec_res.iter().fold(0.0, |acc, x| acc + x) / results.len() as f64;
+    let median_exec_khz = median(&mut exec_res.clone()).unwrap_or(0.0);
+
+    let prove_res: Vec<f64> = results.iter().map(|r| r.prove_khz).collect();
+    let min_prove_khz = prove_res.iter().fold(f64::INFINITY, |a, &b| a.min(b));
+    let max_prove_khz = prove_res.iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
+    let avg_prove_khz = prove_res.iter().fold(0.0, |acc, x| acc + x) / results.len() as f64;
+    let median_prove_khz = median(&mut prove_res.clone()).unwrap_or(0.0);
+
+    BenchSummary {
+        exec_min_khz: min_exec_khz as u32,
+        exec_max_khz: max_exec_khz as u32,
+        exec_avg_khz: avg_exec_khz as u32,
+        exec_median_khz: median_exec_khz as u32,
+        prove_min_khz: min_prove_khz as u32,
+        prove_max_khz: max_prove_khz as u32,
+        prove_avg_khz: avg_prove_khz as u32,
+        prove_median_khz: median_prove_khz as u32,
+    }
+}
+
+fn median(values: &mut Vec<f64>) -> Option<f64> {
+    if values.is_empty() {
+        return None;
+    }
+
+    values.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+    let len = values.len();
+    let mid = len / 2;
+
+    if len % 2 == 0 {
+        // Even number of elements: average the two middle values
+        Some((values[mid - 1] + values[mid]) / 2.0)
+    } else {
+        // Odd number of elements: return the middle value
+        Some(values[mid])
+    }
+}
+
+async fn save_json(
+    out_path: &PathBuf,
+    runs: Vec<BenchResult>,
+    summary: &BenchSummary,
+) -> Result<()> {
+    let out = BenchJsonOutput {
+        runs,
+        summary: summary.clone(),
+    };
+    let out_str = serde_json::to_string_pretty(&out)?;
+    write(&out_path, &out_str).await?;
+
+    Ok(())
 }
