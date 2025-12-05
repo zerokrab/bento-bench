@@ -2,8 +2,9 @@ use alloy::primitives::keccak256;
 use anyhow::{Context, Result, bail};
 use boundless_market::contracts::RequestInputType;
 use boundless_market::{GuestEnv, ProofRequest, storage::fetch_url};
-use risc0_zkvm::compute_image_id;
+use risc0_zkvm::{compute_image_id, default_executor, ExecutorEnv};
 use std::path::PathBuf;
+use tokio::fs;
 
 pub async fn fetch_image(url: &String, dir: &PathBuf) -> Result<String> {
     let elf = fetch_url(&url).await?;
@@ -59,4 +60,17 @@ pub fn get_filename_without_extension(path: &PathBuf) -> Option<String> {
     path.file_stem()
         .and_then(|s| s.to_str())
         .map(|s| s.to_string())
+}
+
+pub async fn compute_cycles(input_in_path: &PathBuf, image_in_path: &PathBuf) -> Result<u64> {
+    let input = GuestEnv::decode(fs::read_to_string(&input_in_path).await?.as_ref())
+        .context("Failed to load input")?;
+    let image = fs::read_to_string(&image_in_path)
+        .await
+        .context("Failed to load image")?;
+
+    let executor = default_executor();
+    let session = executor.execute(ExecutorEnv::try_from(input)?, image.as_ref()).context("Execution failed")?;
+
+    Ok(session.cycles())
 }

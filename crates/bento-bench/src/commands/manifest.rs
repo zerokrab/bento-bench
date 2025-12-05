@@ -21,6 +21,8 @@ pub struct ManifestEntry {
     pub input_id: Option<String>,
     /// Image ID
     pub image_id: Option<String>,
+    /// Exec cycle count
+    pub cycles: u64,
 }
 
 pub fn load_manifest(manifest_dir: &Path) -> Result<Manifest> {

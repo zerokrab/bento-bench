@@ -1,6 +1,6 @@
 use crate::commands::CommonArgs;
 use crate::commands::manifest::{ManifestEntry, load_manifest, write_manifest};
-use crate::commands::prepare::{get_filename_without_extension, save_input};
+use crate::commands::prepare::{compute_cycles, get_filename_without_extension, save_input};
 use anyhow::{Context, Result, anyhow};
 use clap::Args;
 use std::path::PathBuf;
@@ -70,14 +70,17 @@ impl PrepareLocalArgs {
         let image_id = get_filename_without_extension(&image_in_path)
             .ok_or(anyhow!("failed to parse image filename"))?;
 
-        fs::copy(input_in_path, input_out_path).await?;
-        fs::copy(image_in_path, image_out_path).await?;
+        fs::copy(&input_in_path, input_out_path).await?;
+        fs::copy(&image_in_path, image_out_path).await?;
+
+        let cycles = compute_cycles(&input_in_path, &image_in_path).await?;
 
         let entry = ManifestEntry {
             description: self.description.clone(),
             request_id: None,
             input_id: Some(input_id),
             image_id: Some(image_id),
+            cycles,
         };
 
         manifest.entries.push(entry);

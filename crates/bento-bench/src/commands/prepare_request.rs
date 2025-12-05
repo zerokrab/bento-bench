@@ -1,6 +1,6 @@
 use crate::commands::CommonArgs;
 use crate::commands::manifest::{ManifestEntry, load_manifest, write_manifest};
-use crate::commands::prepare::{fetch_image, fetch_input};
+use crate::commands::prepare::{compute_cycles, fetch_image, fetch_input};
 use alloy::primitives::U256;
 use anyhow::{Context, Result};
 use boundless_market::Client;
@@ -55,11 +55,17 @@ impl PrepareRequestArgs {
         let image_id = fetch_image(&request.imageUrl, &images_dir).await?;
         let input_id = fetch_input(&request, &inputs_dir).await?;
 
+        let input_path = inputs_dir.join(&input_id);
+        let image_path = images_dir.join(&image_id);
+
+        let cycles = compute_cycles(&input_path, &image_path).await?;
+
         let entry = ManifestEntry {
             image_id: Some(image_id),
             input_id: Some(input_id),
             description: self.description.clone(),
             request_id: Some(self.request_id),
+            cycles
         };
 
         manifest.entries.push(entry);
