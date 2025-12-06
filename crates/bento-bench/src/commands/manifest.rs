@@ -1,4 +1,3 @@
-use alloy::primitives::U256;
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -15,8 +14,6 @@ pub struct Manifest {
 pub struct ManifestEntry {
     /// Description of the request
     pub description: String,
-    /// Proof request id to fetch.
-    pub request_id: Option<U256>,
     /// Hash of input
     pub input_id: Option<String>,
     /// Image ID

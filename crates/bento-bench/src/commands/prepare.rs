@@ -2,7 +2,7 @@ use alloy::primitives::keccak256;
 use anyhow::{Context, Result, bail};
 use boundless_market::contracts::RequestInputType;
 use boundless_market::{GuestEnv, ProofRequest, storage::fetch_url};
-use risc0_zkvm::{compute_image_id, default_executor, ExecutorEnv};
+use risc0_zkvm::{ExecutorEnv, compute_image_id, default_executor};
 use std::path::PathBuf;
 use tokio::fs;
 
@@ -63,7 +63,9 @@ pub fn get_filename_without_extension(path: &PathBuf) -> Option<String> {
 }
 
 pub async fn compute_cycles(input_in_path: &PathBuf, image_in_path: &PathBuf) -> Result<u64> {
-    let input = fs::read(&input_in_path).await.context("Failed to load input")?;
+    let input = fs::read(&input_in_path)
+        .await
+        .context("Failed to load input")?;
 
     let image = fs::read(&image_in_path)
         .await

@@ -64,8 +64,7 @@ impl PrepareRequestArgs {
             image_id: Some(image_id),
             input_id: Some(input_id),
             description: self.description.clone(),
-            request_id: Some(self.request_id),
-            cycles
+            cycles,
         };
 
         manifest.entries.push(entry);

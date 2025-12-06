@@ -20,10 +20,10 @@ pub struct PrepareLocalArgs {
     image: PathBuf,
     /// Input string
     #[clap(long)]
-    input: Option<String>,
+    input_str: Option<String>,
     /// Path to input file
     #[clap(long)]
-    input_path: Option<PathBuf>,
+    input: Option<PathBuf>,
 }
 
 impl PrepareLocalArgs {
@@ -47,9 +47,9 @@ impl PrepareLocalArgs {
         tracing::info!("Importing local data");
 
         let input_in_path = {
-            if let Some(path) = self.input_path.clone() {
+            if let Some(path) = self.input.clone() {
                 Ok(path)
-            } else if let Some(input_str) = self.input.clone() {
+            } else if let Some(input_str) = self.input_str.clone() {
                 let input_hash = save_input(input_str.into_bytes(), &inputs_dir)?; // TODO: Is this the correct encoding for a string?
                 PathBuf::from_str(format!("{:?}/{}.input", &inputs_dir, &input_hash).as_str())
             } else {
@@ -57,27 +57,27 @@ impl PrepareLocalArgs {
             }
         }?;
 
-        let image_in_path = self
-            .input_path
-            .clone()
-            .ok_or(anyhow!("Image path required"))?;
-
-        let input_out_path = inputs_dir.join(&input_in_path);
-        let image_out_path = images_dir.join(&image_in_path);
+        let image_in_path = self.image.clone();
 
         let input_id = get_filename_without_extension(&input_in_path)
             .ok_or(anyhow!("failed to parse input filename"))?;
         let image_id = get_filename_without_extension(&image_in_path)
             .ok_or(anyhow!("failed to parse image filename"))?;
 
-        fs::copy(&input_in_path, input_out_path).await?;
-        fs::copy(&image_in_path, image_out_path).await?;
+        let image_out_path = images_dir.join(format!("{}.elf", image_id));
+        let input_out_path = inputs_dir.join(format!("{}.input", input_id));
+
+        fs::copy(&input_in_path, &input_out_path)
+            .await
+            .with_context(|| format!("Failed to copy input file {input_in_path:?}"))?;
+        fs::copy(&image_in_path, &image_out_path)
+            .await
+            .with_context(|| format!("Failed to copy image file {input_in_path:?}"))?;
 
         let cycles = compute_cycles(&input_in_path, &image_in_path).await?;
 
         let entry = ManifestEntry {
             description: self.description.clone(),
-            request_id: None,
             input_id: Some(input_id),
             image_id: Some(image_id),
             cycles,
