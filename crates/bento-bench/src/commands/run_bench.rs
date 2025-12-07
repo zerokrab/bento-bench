@@ -94,7 +94,8 @@ impl RunArgs {
         let total = manifest.entries.len();
         for entry in manifest.entries.iter() {
             tracing::info!(
-                "Running benchmark {count} of {total} - {0}...",
+                "Running benchmark {count} / {total} ({0} cycles) - {1}...",
+                entry.cycles,
                 entry.description
             );
             let image_id = entry
