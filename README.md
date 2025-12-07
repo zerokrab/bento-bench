@@ -17,11 +17,11 @@ cargo build --release
 
 A collection of prepared suites are available:
 
-| Description                               | Link                                                                              |   
-|-------------------------------------------|-----------------------------------------------------------------------------------|
-| Order Generator (Tiny, 1M-10M)            | https://boundless-benchmarks.mintybasil.dev/suites/og-suite-tiny_1m-10m.tar.zst   |
-| Order Generator (Small, 100M-1B)          | https://boundless-benchmarks.mintybasil.dev/suites/og-suite-small_100m-1b.tar.zst |
-| Order Generator (Varying sizes, 49M-3.9B) | https://boundless-benchmarks.mintybasil.dev/suites/og-suite-varied_49m-4b.tar.zst |
+| Description                             | Link                                                                              |   
+|-----------------------------------------|-----------------------------------------------------------------------------------|
+| Order Generator (Tiny, 1M-10M)          | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-tiny_1m-10m.tar.zst   |
+| Order Generator (Small, 100M-1B)        | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-small_100m-1b.tar.zst |
+| Order Generator (Varying sizes, 50M-4B) | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-varied_50m-4b.tar.zst |
 
 To fetch and untar:
 ```shell
