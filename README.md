@@ -17,13 +17,15 @@ cargo build --release
 
 A collection of prepared suites are available:
 
-| Description                             | Link                                                                              |   
-|-----------------------------------------|-----------------------------------------------------------------------------------|
-| Order Generator (Tiny, 1M-10M)          | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-tiny_1m-10m.tar.zst   |
-| Order Generator (Small, 100M-1B)        | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-small_100m-1b.tar.zst |
-| Order Generator (Varying sizes, 50M-4B) | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-varied_50m-4b.tar.zst |
+| Source                   | Cycles  | Count | Link                                                                          |   
+|--------------------------|---------|-------|-------------------------------------------------------------------------------|
+| Order Generator (Tiny)   | 1M-10M  | 4     | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-4-1m-10m.tar.zst  |
+| Order Generator (Small)  | 100M-1B | 5     | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-4-100m-1b.tar.zst |
+| Order Generator (Medium) | 1B      | 4     | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-4-1b.tar.zst      |
+| Order Generator (Large)  | 4B      | 4     | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-4-4b.tar.zst      |
+| Order Generator (Varied) | 50M-4B  | 5     | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-4-50m-4b.tar.zst  |
 
-To fetch and untar:
+o fetch and untar:
 ```shell
 curl <link> | tar -xv --zstd
 ```
