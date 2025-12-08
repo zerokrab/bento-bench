@@ -10,12 +10,10 @@ pub async fn fetch_image(url: &String, dir: &PathBuf) -> Result<String> {
     let elf = fetch_url(&url).await?;
     let computed_image_id = compute_image_id(&elf)?.to_string();
     let image_id = computed_image_id.clone();
-    tracing::info!("Computed Image ID: {}", computed_image_id);
     let elf_path = dir.join(format!("{}.elf", computed_image_id));
 
-    // Write the ELF to the archive dir if it doesn't exist
+    // Write the ELF to the data dir if it doesn't exist
     if !does_file_exist(&elf_path).await {
-        tracing::debug!("Saved image to {elf_path:?}");
         std::fs::write(&elf_path, elf)
             .with_context(|| format!("Failed to write ELF file to {:?}", elf_path))?;
     }
