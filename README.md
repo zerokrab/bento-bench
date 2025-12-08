@@ -17,21 +17,24 @@ cargo build --release
 
 A collection of prepared suites are available:
 
-| Description                               | Link                                                                              |   
-|-------------------------------------------|-----------------------------------------------------------------------------------|
-| Order Generator (Tiny, 1M-10M)            | https://boundless-benchmarks.mintybasil.dev/suites/og-suite-tiny_1m-10m.tar.zst   |
-| Order Generator (Small, 100M-1B)          | https://boundless-benchmarks.mintybasil.dev/suites/og-suite-small_100m-1b.tar.zst |
-| Order Generator (Varying sizes, 49M-3.9B) | https://boundless-benchmarks.mintybasil.dev/suites/og-suite-varied_49m-4b.tar.zst |
+| Source                   | Cycles  | Count | Link                                                                          |   
+|--------------------------|---------|-------|-------------------------------------------------------------------------------|
+| Order Generator (Tiny)   | 1M-10M  | 4     | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-4-1m-10m.tar.zst  |
+| Order Generator (Small)  | 100M-1B | 5     | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-4-100m-1b.tar.zst |
+| Order Generator (Medium) | 1B      | 4     | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-4-1b.tar.zst      |
+| Order Generator (Large)  | 4B      | 4     | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-4-4b.tar.zst      |
+| Order Generator (Varied) | 50M-4B  | 5     | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-4-50m-4b.tar.zst  |
+| Signal                   | 50B     | 4     | https://boundless-benchmarks.mintybasil.dev/suites/suite-signal-4.tar.zst     |
+| Kailua                   | 12B-17B | 4     | https://boundless-benchmarks.mintybasil.dev/suites/suite-kailua-4.tar.zst                                                                              |
 
 To fetch and untar:
 ```shell
 curl <link> | tar -xv --zstd
 ```
 
-Once you have a manifest and data directory, benchmarks can be run with
+Once you have a data directory, benchmarks can be run with
 ```shell
 bento-bench run \
-    --manifest manifest.json \
     --data-dir ./data
 ```
 
@@ -40,17 +43,18 @@ To configure the bento backend, see `bento-bench run --help`. The summary of the
 ## Docker
 
 ```shell
-docker run --mount <data-path>:/data <manifest-path>:/manifest.json ghcr.io/2boys1proof/bento-bench 
+docker run --mount <data-path>:/data ghcr.io/2boys1proof/bento-bench 
 ```
 
 
 ## Creating Benchmarks
 
+> Note: On first run, if no manifest exists one will be created with an empty description.
+
 ### Fetching Market Requests
 
 ```shell
 bento-bench prepare-request \
-    --manifest manifest.json \
     --request-id 0x1234...ABCD \
     --description "A simple request (500M)" \
     --data-dir ./data
@@ -63,20 +67,19 @@ This will fetch and save the image and input to the data dir, and append them to
 
 ```shell
 bento-bench prepare-local \
-    --manifest manifest.json \
     --image /path/to/image \
     --input <input string> \ # Or --input-path to load from file
     --description "A local benchmark (1B)"
     --data-dir ./data
 ```
-This will copy the provided image/input into the data dir, and append them to the manifest
+This will copy the provided image/input into the data dir, and append them to the manifest.
 
 ## Uploading Suites
 
-To tar and upload a manifest and data dir, run:
+To tar and upload a data dir to an R2/S3 bucket, run:
 
 ```shell
 R2_ACCESS_KEY=<key> \
 R2_SECRET_KEY=<secret-key \
-./scripts/upload-suite.sh <suite-name>
+./scripts/upload-suite.sh <data-dir> <suite-name>
 ```

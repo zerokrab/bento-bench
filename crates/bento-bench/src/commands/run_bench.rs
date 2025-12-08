@@ -76,7 +76,7 @@ pub struct BenchJsonOutput {
 
 impl RunArgs {
     pub async fn run(&self) -> Result<()> {
-        let manifest = load_manifest(&self.common.manifest_path)?;
+        let manifest = load_manifest(&self.common.data_dir)?;
 
         self.prover_config
             .proving_backend
@@ -94,7 +94,8 @@ impl RunArgs {
         let total = manifest.entries.len();
         for entry in manifest.entries.iter() {
             tracing::info!(
-                "Running benchmark {count} of {total} - {0}...",
+                "Running benchmark {count} / {total} ({0} cycles) - {1}...",
+                entry.cycles,
                 entry.description
             );
             let image_id = entry

@@ -1,7 +1,7 @@
 use crate::commands::CommonArgs;
 use crate::commands::manifest::{ManifestEntry, load_manifest, write_manifest};
-use crate::commands::prepare::{fetch_image, fetch_input};
-use alloy::primitives::U256;
+use crate::commands::prepare::{compute_cycles, fetch_image, fetch_input};
+use alloy::primitives::{TxHash, U256};
 use anyhow::{Context, Result};
 use boundless_market::Client;
 use clap::Args;
@@ -15,6 +15,9 @@ pub struct PrepareRequestArgs {
     /// Request ID to fetch
     #[clap(long)]
     request_id: U256,
+    /// Tx hash from request submission
+    #[clap(long)]
+    tx_hash: Option<TxHash>,
     /// Description of the request/image/input
     #[clap(long)]
     description: String,
@@ -27,7 +30,7 @@ impl PrepareRequestArgs {
     pub async fn run(&self) -> Result<()> {
         let data_dir = self.common.data_dir.clone();
 
-        let mut manifest = load_manifest(&self.common.manifest_path)?;
+        let mut manifest = load_manifest(&self.common.data_dir)?;
 
         let images_dir = data_dir.join("images");
         create_dir_all(&images_dir).await.context(format!(
@@ -41,7 +44,7 @@ impl PrepareRequestArgs {
             inputs_dir
         ))?;
 
-        tracing::info!("Fetching data for request ID: 0x{:x}", &self.request_id);
+        tracing::info!("Fetching data for request 0x{:x}", &self.request_id);
         let client = Client::builder()
             .with_rpc_url(self.rpc_url.clone())
             .with_timeout(None)
@@ -49,22 +52,29 @@ impl PrepareRequestArgs {
             .await?;
 
         let (request, _signature) = client
-            .fetch_proof_request(self.request_id.clone(), None, None)
+            .fetch_proof_request(self.request_id.clone(), self.tx_hash.clone(), None)
             .await?;
-
+        tracing::info!("Fetching image...");
         let image_id = fetch_image(&request.imageUrl, &images_dir).await?;
+        tracing::info!("Fetching input...");
         let input_id = fetch_input(&request, &inputs_dir).await?;
+
+        let image_path = images_dir.join(format!("{}.elf", image_id));
+        let input_path = inputs_dir.join(format!("{}.input", input_id));
+
+        tracing::info!("Running executor to determine cycle count...");
+        let cycles = compute_cycles(&input_path, &image_path).await?;
 
         let entry = ManifestEntry {
             image_id: Some(image_id),
             input_id: Some(input_id),
             description: self.description.clone(),
-            request_id: Some(self.request_id),
+            cycles,
         };
 
         manifest.entries.push(entry);
 
-        write_manifest(&manifest, &self.common.manifest_path).await?;
+        write_manifest(&manifest, &self.common.data_dir).await?;
 
         Ok(())
     }
