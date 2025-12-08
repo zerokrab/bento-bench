@@ -24,8 +24,10 @@ A collection of prepared suites are available:
 | Order Generator (Medium) | 1B      | 4     | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-4-1b.tar.zst      |
 | Order Generator (Large)  | 4B      | 4     | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-4-4b.tar.zst      |
 | Order Generator (Varied) | 50M-4B  | 5     | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-4-50m-4b.tar.zst  |
+| Signal                   | 50B     | 4     | https://boundless-benchmarks.mintybasil.dev/suites/suite-signal-4.tar.zst     |
+| Kailua                   | 12B-17B | 4     | https://boundless-benchmarks.mintybasil.dev/suites/suite-kailua-4.tar.zst                                                                              |
 
-o fetch and untar:
+To fetch and untar:
 ```shell
 curl <link> | tar -xv --zstd
 ```
