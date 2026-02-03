@@ -34,14 +34,14 @@ impl PrepareLocalArgs {
 
         let images_dir = data_dir.join("images");
         create_dir_all(&images_dir).await.context(format!(
-            "Failed to create images directory: {:?}",
-            images_dir
+            "Failed to create images directory: {}",
+            images_dir.display()
         ))?;
 
         let inputs_dir = data_dir.join("inputs");
         create_dir_all(&inputs_dir).await.context(format!(
-            "Failed to create inputs directory: {:?}",
-            inputs_dir
+            "Failed to create inputs directory: {}",
+            inputs_dir.display()
         ))?;
 
         tracing::info!("Importing local data");
@@ -51,7 +51,9 @@ impl PrepareLocalArgs {
                 Ok(path)
             } else if let Some(input_str) = self.input_str.clone() {
                 let input_hash = save_input(input_str.into_bytes(), &inputs_dir)?; // TODO: Is this the correct encoding for a string?
-                PathBuf::from_str(format!("{:?}/{}.input", &inputs_dir, &input_hash).as_str())
+                PathBuf::from_str(
+                    format!("{}/{}.input", &inputs_dir.display(), &input_hash).as_str(),
+                )
             } else {
                 return Err(anyhow!("Must specify either --input or --input-path"));
             }
@@ -60,19 +62,19 @@ impl PrepareLocalArgs {
         let image_in_path = self.image.clone();
 
         let input_id = get_filename_without_extension(&input_in_path)
-            .ok_or(anyhow!("failed to parse input filename"))?;
+            .ok_or_else(|| anyhow!("failed to parse input filename"))?;
         let image_id = get_filename_without_extension(&image_in_path)
-            .ok_or(anyhow!("failed to parse image filename"))?;
+            .ok_or_else(|| anyhow!("failed to parse image filename"))?;
 
-        let image_out_path = images_dir.join(format!("{}.elf", image_id));
-        let input_out_path = inputs_dir.join(format!("{}.input", input_id));
+        let image_out_path = images_dir.join(format!("{image_id}.elf"));
+        let input_out_path = inputs_dir.join(format!("{input_id}.input"));
 
         fs::copy(&input_in_path, &input_out_path)
             .await
-            .with_context(|| format!("Failed to copy input file {input_in_path:?}"))?;
+            .with_context(|| format!("Failed to copy input file {}", input_in_path.display()))?;
         fs::copy(&image_in_path, &image_out_path)
             .await
-            .with_context(|| format!("Failed to copy image file {input_in_path:?}"))?;
+            .with_context(|| format!("Failed to copy image file {}", image_in_path.display()))?;
 
         let cycles = compute_cycles(&input_in_path, &image_in_path).await?;
 

@@ -6,7 +6,7 @@ on:
       - main
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: 2boys1proof/bento-bench
+  IMAGE_NAME: zerokrab/bento-bench
   DOCKERFILE: ./Dockerfile
 
 jobs:
