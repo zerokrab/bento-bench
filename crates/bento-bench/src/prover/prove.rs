@@ -162,16 +162,13 @@ pub async fn get_taskdb_duration_secs(pool: &PgPool, job_id: &str) -> Result<f64
         .fetch_optional(pool)
         .await;
 
-    match elapsed_result {
-        Ok(Some(elapsed)) => {
-            tracing::debug!("Retrieved from taskdb: {} seconds", elapsed);
-            Ok(elapsed)
-        }
-        _ => {
-            tracing::debug!(
-                "Failed to retrieve data from taskdb, reverting to client-side calculation"
-            );
-            Err(anyhow!("Failed to get duration from taskdb"))
-        }
+    if let Ok(Some(elapsed)) = elapsed_result {
+        tracing::debug!("Retrieved from taskdb: {} seconds", elapsed);
+        Ok(elapsed)
+    } else {
+        tracing::debug!(
+            "Failed to retrieve data from taskdb, reverting to client-side calculation"
+        );
+        Err(anyhow!("Failed to get duration from taskdb"))
     }
 }

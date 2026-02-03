@@ -34,14 +34,14 @@ impl PrepareRequestArgs {
 
         let images_dir = data_dir.join("images");
         create_dir_all(&images_dir).await.context(format!(
-            "Failed to create images directory: {:?}",
-            images_dir
+            "Failed to create images directory: {}",
+            images_dir.display()
         ))?;
 
         let inputs_dir = data_dir.join("inputs");
         create_dir_all(&inputs_dir).await.context(format!(
-            "Failed to create inputs directory: {:?}",
-            inputs_dir
+            "Failed to create inputs directory: {}",
+            inputs_dir.display()
         ))?;
 
         tracing::info!("Fetching data for request 0x{:x}", &self.request_id);
@@ -52,15 +52,15 @@ impl PrepareRequestArgs {
             .await?;
 
         let (request, _signature) = client
-            .fetch_proof_request(self.request_id.clone(), self.tx_hash.clone(), None)
+            .fetch_proof_request(self.request_id, self.tx_hash, None)
             .await?;
         tracing::info!("Fetching image...");
         let image_id = fetch_image(&request.imageUrl, &images_dir).await?;
         tracing::info!("Fetching input...");
         let input_id = fetch_input(&request, &inputs_dir).await?;
 
-        let image_path = images_dir.join(format!("{}.elf", image_id));
-        let input_path = inputs_dir.join(format!("{}.input", input_id));
+        let image_path = images_dir.join(format!("{image_id}.elf"));
+        let input_path = inputs_dir.join(format!("{input_id}.input"));
 
         tracing::info!("Running executor to determine cycle count...");
         let cycles = compute_cycles(&input_path, &image_path).await?;

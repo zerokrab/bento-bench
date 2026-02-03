@@ -1,14 +1,16 @@
 # bento-bench
 
+A utility for creating and running benchmarks against [Bento](https://docs.boundless.network/provers/bento) clusters.
+
 ## Installing
 
 ### Binaries
 
-See [releases](https://github.com/2Boys1Proof/bento-bench/releases).
+See [releases](https://github.com/zerokrab/bento-bench/releases).
 
 ### Build From Source
 ```shell
-git clone github.com/2boys1proof/bento-bench
+git clone github.com/zerokrab/bento-bench
 cd bento-bench
 cargo build --release
 ```
@@ -43,7 +45,7 @@ To configure the bento backend, see `bento-bench run --help`. The summary of the
 ## Docker
 
 ```shell
-docker run --mount <data-path>:/data ghcr.io/2boys1proof/bento-bench 
+docker run --mount <data-path>:/data ghcr.io/zerokrab/bento-bench 
 ```
 
 

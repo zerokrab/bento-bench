@@ -107,7 +107,7 @@ impl RunArgs {
         let mut res = Vec::new();
         let mut count = 1;
         let total = manifest.entries.len();
-        for entry in manifest.entries.iter() {
+        for entry in manifest.entries {
             tracing::info!(
                 "Running benchmark {count} / {total} ({0} cycles) - {1}...",
                 entry.cycles,
@@ -122,15 +122,15 @@ impl RunArgs {
                 .clone()
                 .expect("Input id missing from manifest");
 
-            let image_path = images_dir.join(format!("{}.elf", image_id));
-            let input_path = inputs_dir.join(format!("{}.input", input_id));
+            let image_path = images_dir.join(format!("{image_id}.elf"));
+            let input_path = inputs_dir.join(format!("{input_id}.input"));
 
             tracing::debug!("Loading image from {image_path:?}");
             let elf = std::fs::read(&image_path)
-                .with_context(|| format!("Failed to load image file: {image_path:?}"))?;
+                .with_context(|| format!("Failed to load image file: {}", image_path.display()))?;
             tracing::debug!("Loading image from {input_path:?}");
             let input = std::fs::read(&input_path)
-                .with_context(|| format!("Failed to load input file: {input_path:?}"))?;
+                .with_context(|| format!("Failed to load input file: {}", input_path.display()))?;
 
             tracing::debug!("Running program preflight...");
             let (_, session_stats, exec_duration_secs, exec_khz) = prove_stark(
@@ -164,7 +164,7 @@ impl RunArgs {
 
             let snark_duration_secs = if self.run_snark {
                 tracing::debug!("Running snark proof...");
-                let session_id = session_id.ok_or(anyhow!("Missing stark session id"))?;
+                let session_id = session_id.ok_or_else(|| anyhow!("Missing stark session id"))?;
                 let (_, snark_duration) = prove_snark(prover.clone(), session_id).await?;
                 Some(snark_duration)
             } else {
@@ -224,18 +224,18 @@ fn print_bench_summary(bench_summary: &BenchSummary) {
 }
 
 fn get_bench_summary(results: &[BenchResult]) -> BenchSummary {
-    let exec_res: Vec<f64> = results.iter().map(|r| r.exec_khz).collect();
+    let mut exec_res: Vec<f64> = results.iter().map(|r| r.exec_khz).collect();
     let min_exec_khz = exec_res.iter().fold(f64::INFINITY, |a, &b| a.min(b));
     let max_exec_khz = exec_res.iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
     let avg_exec_khz = exec_res.iter().fold(0.0, |acc, x| acc + x) / results.len() as f64;
-    let median_exec_khz = median(&mut exec_res.clone()).unwrap_or(0.0);
+    let median_exec_khz = median(&mut exec_res).unwrap_or(0.0);
 
-    if results.len() > 0 && results[0].prove_khz.is_some() {
-        let prove_res: Vec<f64> = results.iter().map(|r| r.prove_khz.unwrap()).collect();
+    if !results.is_empty() && results[0].prove_khz.is_some() {
+        let mut prove_res: Vec<f64> = results.iter().map(|r| r.prove_khz.unwrap()).collect();
         let min_prove_khz = prove_res.iter().fold(f64::INFINITY, |a, &b| a.min(b));
         let max_prove_khz = prove_res.iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
         let avg_prove_khz = prove_res.iter().fold(0.0, |acc, x| acc + x) / results.len() as f64;
-        let median_prove_khz = median(&mut prove_res.clone()).unwrap_or(0.0);
+        let median_prove_khz = median(&mut prove_res).unwrap_or(0.0);
 
         BenchSummary {
             exec_min_khz: min_exec_khz as u32,
@@ -261,7 +261,7 @@ fn get_bench_summary(results: &[BenchResult]) -> BenchSummary {
     }
 }
 
-fn median(values: &mut Vec<f64>) -> Option<f64> {
+fn median(values: &mut [f64]) -> Option<f64> {
     if values.is_empty() {
         return None;
     }

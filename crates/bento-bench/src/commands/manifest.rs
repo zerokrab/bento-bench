@@ -35,16 +35,15 @@ pub fn load_manifest(manifest_dir: &Path) -> Result<Manifest> {
     }
 
     let manifest_str = fs::read_to_string(&manifest_path)
-        .with_context(|| format!("Failed to read manifest file: {:?}", manifest_path))?;
+        .with_context(|| format!("Failed to read manifest file: {manifest_path:?}"))?;
     serde_json::from_str(&manifest_str)
-        .with_context(|| format!("Failed to parse manifest file: {:?}", manifest_path))
+        .with_context(|| format!("Failed to parse manifest file: {manifest_path:?}"))
 }
 
 pub async fn write_manifest(manifest: &Manifest, output_dir: &Path) -> Result<()> {
     let output_path = output_dir.join("manifest.json");
     let out_str = serde_json::to_string_pretty(&manifest)?;
-    write(&output_path, out_str).await.context(format!(
-        "Failed to write manifest file to {:?}",
-        output_path
-    ))
+    write(&output_path, out_str)
+        .await
+        .context(format!("Failed to write manifest file to {output_path:?}",))
 }
