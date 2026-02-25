@@ -23,6 +23,10 @@ pub struct RunArgs {
     /// Additionally create a snark proof for each benchmark
     #[clap(long = "snark", default_value_t = false)]
     run_snark: bool,
+
+    /// Use Taskdb to measure proof duration instead of client-side timing
+    #[clap(long = "check-taskdb", default_value_t = false)]
+    check_taskdb: bool,
     /// Output summary to json file
     #[clap(long)]
     json: Option<PathBuf>,
@@ -139,6 +143,7 @@ impl RunArgs {
                 elf.clone(),
                 input.clone(),
                 true,
+                self.check_taskdb,
             )
             .await
             .context("Execution failed")?;
@@ -155,6 +160,7 @@ impl RunArgs {
                     elf.clone(),
                     input.clone(),
                     self.exec_only,
+                    self.check_taskdb,
                 )
                 .await
                 .context("Stark proving failed")?;
@@ -165,7 +171,8 @@ impl RunArgs {
             let snark_duration_secs = if self.run_snark {
                 tracing::debug!("Running snark proof...");
                 let session_id = session_id.ok_or_else(|| anyhow!("Missing stark session id"))?;
-                let (_, snark_duration) = prove_snark(prover.clone(), session_id).await?;
+                let (_, snark_duration) =
+                    prove_snark(prover.clone(), session_id, self.check_taskdb).await?;
                 Some(snark_duration)
             } else {
                 tracing::debug!("Skipping snark proof");
