@@ -37,8 +37,8 @@ This is a Rust workspace with three crates:
 
 ### Prover Module (`crates/bento-bench/src/prover/`)
 
-- `prove_stark()` — uploads ELF + input to Bento, creates a session (with `exec_only` flag for first pass), polls for completion, returns `SessionStats` and timing. Optionally queries PostgreSQL (`taskdb`) for precise job durations if `DATABASE_URL` is set (default: `postgresql://worker:password@localhost:5432/taskdb`).
-- `prove_snark()` — takes the `SessionId` from a completed STARK proof, submits a SNARK request, and polls for completion.
+- `prove_stark()` — uploads ELF + input to Bento, creates a session (with `exec_only` flag for first pass), polls for completion, returns `SessionStats` and timing. Accepts a `check_taskdb` flag; when true, queries PostgreSQL (`taskdb`) for precise job durations (requires `DATABASE_URL`, default: `postgresql://worker:password@localhost:5432/taskdb`).
+- `prove_snark()` — takes the `SessionId` from a completed STARK proof, submits a SNARK request, and polls for completion. Also accepts `check_taskdb` to optionally query taskdb for precise duration.
 
 ### Data Directory Layout
 

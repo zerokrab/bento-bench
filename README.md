@@ -40,7 +40,7 @@ bento-bench run \
     --data-dir ./data
 ```
 
-To configure the bento backend, see `bento-bench run --help`. The summary of the benchmarks can be outputted to a json file with `--json <path>`.
+See `bento-bench run --help` for more configuration options.
 
 ## Docker
 
@@ -50,6 +50,35 @@ docker run --mount <data-path>:/data ghcr.io/zerokrab/bento-bench
 
 
 ## Creating Benchmarks
+
+### Data Directory Layout
+
+```
+data/
+├── manifest.json         # Benchmark index
+├── images/{image_id}.elf # RISC0 ELF binaries
+└── inputs/{input_id}.bin # Serialized input blobs
+```
+
+### Manifest Structure
+
+The data directory contains a `manifest.json` that describes each benchmark entry:
+
+```json
+{
+  "description": "My benchmark suite",
+  "entries": [
+    {
+      "description": "A simple request (500M)",
+      "image_id": "abc123...",
+      "input_id": "def456...",
+      "cycles": 500000000
+    }
+  ]
+}
+```
+
+`image_id` and `input_id` correspond to filenames under `data/images/` and `data/inputs/`. The `cycles` field is computed automatically during the prepare phase.
 
 > Note: On first run, if no manifest exists one will be created with an empty description.
 
