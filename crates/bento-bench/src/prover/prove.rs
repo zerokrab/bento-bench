@@ -53,7 +53,6 @@ pub async fn prove_stark(
         match status.status.as_ref() {
             "RUNNING" => {
                 tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
-                continue;
             }
             "SUCCEEDED" => {
                 let Some(stats) = status.stats else {
@@ -105,7 +104,6 @@ pub async fn prove_snark(
         match status.status.as_ref() {
             "RUNNING" => {
                 tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-                continue;
             }
             "SUCCEEDED" => {
                 break;
@@ -164,11 +162,11 @@ pub async fn create_pg_pool() -> Option<PgPool> {
 
 /// Query taskdb for the tasks matching `job_id` to compute start/end time => job duration.
 pub async fn get_taskdb_duration_secs(pool: &PgPool, job_id: &str) -> Result<f64> {
-    let elapsed_secs_query = r#"
+    let elapsed_secs_query = r"
                 SELECT EXTRACT(EPOCH FROM (MAX(updated_at) - MIN(started_at)))::FLOAT8
                 FROM tasks
                 WHERE job_id = $1::uuid
-            "#;
+            ";
 
     let elapsed_result = sqlx::query_scalar::<_, f64>(elapsed_secs_query)
         .bind(job_id)
