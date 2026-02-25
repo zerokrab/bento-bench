@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG RUST_IMG=rust:1.91-bookworm
 
-FROM ${RUST_IMG} AS rust-builder
+FROM ${RUST_IMG} AS chef
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ="America/Los_Angeles"
@@ -14,22 +14,34 @@ ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH
 
-# # Install RISC0 and groth16 component early for better caching
+RUN cargo install cargo-chef --locked
+
+# Install RISC0 early for better caching (needed by build scripts during cook)
 ENV RISC0_HOME=/usr/local/risc0
 ENV PATH="/root/.cargo/bin:${PATH}"
 
-# # Install RISC0 and groth16 component - this layer will be cached unless RISC0_HOME changes
 RUN curl -L https://risczero.com/install | bash && \
     /root/.risc0/bin/rzup install && \
-    # Clean up any temporary files to reduce image size
     rm -rf /tmp/* /var/tmp/*
 
-FROM rust-builder AS builder
 
-WORKDIR /src/
+FROM chef AS planner
+
+WORKDIR /src
 COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
 
+
+FROM chef AS builder
+
+WORKDIR /src
+COPY --from=planner /src/recipe.json recipe.json
+# Build dependencies only — this layer is cached unless Cargo.toml/Cargo.lock changes
+RUN cargo chef cook --release --recipe-path recipe.json
+
+COPY . .
 RUN cargo build --release -p bento-bench --bin bento-bench
+
 
 FROM debian:bookworm-slim AS runtime
 
@@ -43,6 +55,5 @@ COPY scripts/docker-run-benchmarks.sh /app/docker-run-benchmarks.sh
 
 VOLUME ["/data"]
 VOLUME ["/manifest.json"]
-
 
 ENTRYPOINT ["/app/docker-run-benchmarks.sh"]
