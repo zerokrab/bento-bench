@@ -2,8 +2,10 @@ name: Docker (Build & Push)
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: zerokrab/bento-bench
@@ -43,7 +45,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           file: ${{ env.DOCKERFILE }}
-          push: true
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
