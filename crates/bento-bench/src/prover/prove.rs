@@ -14,6 +14,7 @@ pub async fn prove_stark(
     input: Vec<u8>,
     exec_only: bool,
     check_taskdb: bool,
+    poll_interval: u64,
 ) -> Result<(SessionId, SessionStats, f64, f64)> {
     // Optional postgres connection to get taskdb stats
     let pg_pool = if check_taskdb {
@@ -52,7 +53,7 @@ pub async fn prove_stark(
 
         match status.status.as_ref() {
             "RUNNING" => {
-                tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
+                tokio::time::sleep(tokio::time::Duration::from_millis(poll_interval)).await;
             }
             "SUCCEEDED" => {
                 let Some(stats) = status.stats else {
@@ -88,6 +89,7 @@ pub async fn prove_snark(
     prover: BonsaiClient,
     session_id: SessionId,
     check_taskdb: bool,
+    poll_interval: u64,
 ) -> Result<(SnarkId, f64)> {
     let pool = if check_taskdb {
         create_pg_pool().await
@@ -103,7 +105,7 @@ pub async fn prove_snark(
 
         match status.status.as_ref() {
             "RUNNING" => {
-                tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+                tokio::time::sleep(tokio::time::Duration::from_millis(poll_interval)).await;
             }
             "SUCCEEDED" => {
                 break;

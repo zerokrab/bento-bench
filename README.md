@@ -42,11 +42,17 @@ bento-bench run \
 
 See `bento-bench run --help` for more configuration options.
 
-## Docker
+### Docker
 
 ```shell
 docker run --mount <data-path>:/data ghcr.io/zerokrab/bento-bench 
 ```
+### Timing Precision 
+bento-bench can time the execution of proofs by either:
+- Checking TaskDB for start/end times (`--check-taskdb`)
+- Recording wall clock time
+
+For the best accuracy, TaskDB should checked. If it is not checked, `--poll-interval` may need to be specified to get accurate readings for smaller proofs.
 
 
 ## Creating Benchmarks
@@ -105,7 +111,7 @@ bento-bench prepare-local \
 ```
 This will copy the provided image/input into the data dir, and append them to the manifest.
 
-## Uploading Suites
+### Uploading Suites
 
 To tar and upload a data dir to an R2/S3 bucket, run:
 
