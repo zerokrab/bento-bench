@@ -16,6 +16,7 @@ use tokio::fs::write;
 pub struct RunArgs {
     #[clap(flatten)]
     common: CommonArgs,
+
     /// Execute only (no prove)
     #[clap(long, default_value_t = false)]
     exec_only: bool,
@@ -23,9 +24,18 @@ pub struct RunArgs {
     /// Additionally create a snark proof for each benchmark
     #[clap(long = "snark", default_value_t = false)]
     run_snark: bool,
+
+    /// Use Taskdb to measure proof duration instead of client-side timing
+    #[clap(long = "check-taskdb", default_value_t = false)]
+    check_taskdb: bool,
+
     /// Output summary to json file
     #[clap(long)]
     json: Option<PathBuf>,
+
+    /// Polling interval when checking job status (ms). When `check-taskdb=false` this may impact timing precision
+    #[clap(long = "poll-interval", default_value_t = 1000)]
+    poll_interval_ms: u64,
 
     #[clap(flatten, next_help_heading = "Prover")]
     pub prover_config: ProverConfig,
@@ -139,6 +149,8 @@ impl RunArgs {
                 elf.clone(),
                 input.clone(),
                 true,
+                self.check_taskdb,
+                self.poll_interval_ms,
             )
             .await
             .context("Execution failed")?;
@@ -155,6 +167,8 @@ impl RunArgs {
                     elf.clone(),
                     input.clone(),
                     self.exec_only,
+                    self.check_taskdb,
+                    self.poll_interval_ms,
                 )
                 .await
                 .context("Stark proving failed")?;
@@ -165,7 +179,13 @@ impl RunArgs {
             let snark_duration_secs = if self.run_snark {
                 tracing::debug!("Running snark proof...");
                 let session_id = session_id.ok_or_else(|| anyhow!("Missing stark session id"))?;
-                let (_, snark_duration) = prove_snark(prover.clone(), session_id).await?;
+                let (_, snark_duration) = prove_snark(
+                    prover.clone(),
+                    session_id,
+                    self.check_taskdb,
+                    self.poll_interval_ms,
+                )
+                .await?;
                 Some(snark_duration)
             } else {
                 tracing::debug!("Skipping snark proof");

@@ -40,16 +40,51 @@ bento-bench run \
     --data-dir ./data
 ```
 
-To configure the bento backend, see `bento-bench run --help`. The summary of the benchmarks can be outputted to a json file with `--json <path>`.
+See `bento-bench run --help` for more configuration options.
 
-## Docker
+### Docker
 
 ```shell
 docker run --mount <data-path>:/data ghcr.io/zerokrab/bento-bench 
 ```
+### Timing Precision 
+bento-bench can time the execution of proofs by either:
+- Checking TaskDB for start/end times (`--check-taskdb`)
+- Recording wall clock time
+
+For the best accuracy, TaskDB should checked. If it is not checked, `--poll-interval` may need to be specified to get accurate readings for smaller proofs.
 
 
 ## Creating Benchmarks
+
+### Data Directory Layout
+
+```
+data/
+├── manifest.json         # Benchmark index
+├── images/{image_id}.elf # RISC0 ELF binaries
+└── inputs/{input_id}.bin # Serialized input blobs
+```
+
+### Manifest Structure
+
+The data directory contains a `manifest.json` that describes each benchmark entry:
+
+```json
+{
+  "description": "My benchmark suite",
+  "entries": [
+    {
+      "description": "A simple request (500M)",
+      "image_id": "abc123...",
+      "input_id": "def456...",
+      "cycles": 500000000
+    }
+  ]
+}
+```
+
+`image_id` and `input_id` correspond to filenames under `data/images/` and `data/inputs/`. The `cycles` field is computed automatically during the prepare phase.
 
 > Note: On first run, if no manifest exists one will be created with an empty description.
 
@@ -76,7 +111,7 @@ bento-bench prepare-local \
 ```
 This will copy the provided image/input into the data dir, and append them to the manifest.
 
-## Uploading Suites
+### Uploading Suites
 
 To tar and upload a data dir to an R2/S3 bucket, run:
 

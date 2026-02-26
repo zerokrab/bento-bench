@@ -13,9 +13,15 @@ pub async fn prove_stark(
     elf: Vec<u8>,
     input: Vec<u8>,
     exec_only: bool,
+    check_taskdb: bool,
+    poll_interval: u64,
 ) -> Result<(SessionId, SessionStats, f64, f64)> {
     // Optional postgres connection to get taskdb stats
-    let pg_pool = create_pg_pool().await;
+    let pg_pool = if check_taskdb {
+        create_pg_pool().await
+    } else {
+        None
+    };
 
     ensure!(
         compute_image_id(&elf)? == Digest::from_hex(&image_id)?,
@@ -47,8 +53,7 @@ pub async fn prove_stark(
 
         match status.status.as_ref() {
             "RUNNING" => {
-                tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-                continue;
+                tokio::time::sleep(tokio::time::Duration::from_millis(poll_interval)).await;
             }
             "SUCCEEDED" => {
                 let Some(stats) = status.stats else {
@@ -80,8 +85,17 @@ pub async fn prove_stark(
     Ok((session_id, stats, elapsed_secs, khz))
 }
 
-pub async fn prove_snark(prover: BonsaiClient, session_id: SessionId) -> Result<(SnarkId, f64)> {
-    let pool = create_pg_pool().await;
+pub async fn prove_snark(
+    prover: BonsaiClient,
+    session_id: SessionId,
+    check_taskdb: bool,
+    poll_interval: u64,
+) -> Result<(SnarkId, f64)> {
+    let pool = if check_taskdb {
+        create_pg_pool().await
+    } else {
+        None
+    };
     let start_time = std::time::Instant::now();
 
     let snark_id = prover.create_snark(session_id.uuid.clone()).await?;
@@ -91,8 +105,7 @@ pub async fn prove_snark(prover: BonsaiClient, session_id: SessionId) -> Result<
 
         match status.status.as_ref() {
             "RUNNING" => {
-                tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-                continue;
+                tokio::time::sleep(tokio::time::Duration::from_millis(poll_interval)).await;
             }
             "SUCCEEDED" => {
                 break;
@@ -151,11 +164,11 @@ pub async fn create_pg_pool() -> Option<PgPool> {
 
 /// Query taskdb for the tasks matching `job_id` to compute start/end time => job duration.
 pub async fn get_taskdb_duration_secs(pool: &PgPool, job_id: &str) -> Result<f64> {
-    let elapsed_secs_query = r#"
+    let elapsed_secs_query = r"
                 SELECT EXTRACT(EPOCH FROM (MAX(updated_at) - MIN(started_at)))::FLOAT8
                 FROM tasks
                 WHERE job_id = $1::uuid
-            "#;
+            ";
 
     let elapsed_result = sqlx::query_scalar::<_, f64>(elapsed_secs_query)
         .bind(job_id)
