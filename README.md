@@ -29,6 +29,8 @@ A collection of prepared suites are available:
 | Signal                   | 50B     | 4     | https://boundless-benchmarks.mintybasil.dev/suites/suite-signal-4.tar.zst     |
 | Kailua                   | 12B-17B | 4     | https://boundless-benchmarks.mintybasil.dev/suites/suite-kailua-4.tar.zst                                                                              |
 
+> Note: Please open an issue if you would like to see other suites added.
+
 To fetch and untar:
 ```shell
 curl <link> | tar -xv --zstd
@@ -125,8 +127,7 @@ R2_SECRET_KEY=<secret-key \
 
 This library is free software; you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation; either version 3 of the License, or (at
-your option) any later version.
+the Free Software Foundation.
 
 See the [LICENSE](LICENSE) file or https://www.gnu.org/licenses/lgpl-3.0.html
 for the full license text.
