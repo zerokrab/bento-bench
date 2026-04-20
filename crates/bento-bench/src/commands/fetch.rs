@@ -67,3 +67,104 @@ pub async fn fetch_suite(url: &str) -> Result<PathBuf> {
     tracing::info!("Suite extracted to {}", effective_dir.display());
     Ok(effective_dir)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Helper: create a .tar.zst archive containing a valid suite structure,
+    /// plus a flat variant (no wrapping directory).
+    fn create_test_suite_archive(wrap_in_subdir: bool) -> (tempfile::TempDir, PathBuf) {
+        let src_dir = tempfile::tempdir().unwrap();
+
+        let content_dir = if wrap_in_subdir {
+            let sub = src_dir.path().join("suite");
+            std::fs::create_dir_all(&sub).unwrap();
+            sub
+        } else {
+            src_dir.path().to_path_buf()
+        };
+
+        let images_dir = content_dir.join("images");
+        let inputs_dir = content_dir.join("inputs");
+        std::fs::create_dir_all(&images_dir).unwrap();
+        std::fs::create_dir_all(&inputs_dir).unwrap();
+
+        // Write manifest.json
+        let manifest = serde_json::json!({
+            "description": "test suite",
+            "entries": []
+        });
+        std::fs::write(content_dir.join("manifest.json"), manifest.to_string()).unwrap();
+
+        // Write dummy files
+        std::fs::write(images_dir.join("test.elf"), b"elf-content").unwrap();
+        std::fs::write(inputs_dir.join("test.input"), b"input-content").unwrap();
+
+        // Create .tar.zst archive using CLI tools
+        let archive_dir = tempfile::tempdir().unwrap();
+        let archive_path = archive_dir.path().join("suite.tar.zst");
+
+        let status = std::process::Command::new("tar")
+            .arg("--zstd")
+            .arg("-cf")
+            .arg(&archive_path)
+            .arg("-C")
+            .arg(src_dir.path())
+            .arg(if wrap_in_subdir { "suite" } else { "." })
+            .status()
+            .expect("tar command failed to start");
+        assert!(status.success(), "tar --zstd failed");
+
+        (archive_dir, archive_path)
+    }
+
+    /// Extract a .tar.zst file using the same pipeline as fetch_suite
+    /// (ZstdDecoder + tokio_tar), but reading from a local file.
+    async fn extract_archive(archive_path: &PathBuf, dest: &std::path::Path) -> Result<()> {
+        let file = tokio::fs::File::open(archive_path).await?;
+        let buf_reader = tokio::io::BufReader::new(file);
+        let zstd_reader = ZstdDecoder::new(buf_reader);
+        let mut archive = tokio_tar::Archive::new(zstd_reader);
+        archive.unpack(dest).await?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_extract_flat_archive() {
+        let (_archive_dir, archive_path) = create_test_suite_archive(false);
+
+        let extract_dir = tempfile::tempdir().unwrap();
+        extract_archive(&archive_path, extract_dir.path())
+            .await
+            .expect("extraction failed");
+
+        assert!(
+            extract_dir.path().join("manifest.json").exists(),
+            "manifest.json should be at top level for flat archive"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_extract_subdirectory_archive() {
+        let (_archive_dir, archive_path) = create_test_suite_archive(true);
+
+        let extract_dir = tempfile::tempdir().unwrap();
+        extract_archive(&archive_path, extract_dir.path())
+            .await
+            .expect("extraction failed");
+
+        // The archive was created with `tar -C <src> suite`, so it contains
+        // a `suite/` directory. Files extract under extract_dir/suite/.
+        assert!(
+            extract_dir.path().join("suite/manifest.json").exists(),
+            "manifest.json should exist under suite/ subdirectory"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_fetch_suite_rejects_bad_url() {
+        let result = fetch_suite("http://127.0.0.1:1/nonexistent.tar.zst").await;
+        assert!(result.is_err(), "expected error for bad URL");
+    }
+}
