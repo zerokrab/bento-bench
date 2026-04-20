@@ -30,7 +30,7 @@ impl PrepareRequestArgs {
     pub async fn run(&self) -> Result<()> {
         let data_dir = self.common.data_dir.clone();
 
-        let mut manifest = load_manifest(&self.common.data_dir)?;
+        let mut manifest = load_manifest(&self.common.data_dir, true)?;
 
         let images_dir = data_dir.join("images");
         create_dir_all(&images_dir).await.context(format!(
