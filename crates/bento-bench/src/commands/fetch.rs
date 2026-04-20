@@ -28,7 +28,7 @@ pub async fn fetch_suite(url: &str) -> Result<PathBuf> {
     // Stream the response body through zstd decompression then tar extraction
     let stream = response
         .bytes_stream()
-        .map(|result| result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)));
+        .map(|result| result.map_err(std::io::Error::other));
     let reader = StreamReader::new(stream);
     let buf_reader = BufReader::new(reader);
     let zstd_reader = ZstdDecoder::new(buf_reader);
@@ -121,7 +121,7 @@ mod tests {
 
     /// Extract a .tar.zst file using the same pipeline as fetch_suite
     /// (ZstdDecoder + tokio_tar), but reading from a local file.
-    async fn extract_archive(archive_path: &PathBuf, dest: &std::path::Path) -> Result<()> {
+    async fn extract_archive(archive_path: &std::path::Path, dest: &std::path::Path) -> Result<()> {
         let file = tokio::fs::File::open(archive_path).await?;
         let buf_reader = tokio::io::BufReader::new(file);
         let zstd_reader = ZstdDecoder::new(buf_reader);

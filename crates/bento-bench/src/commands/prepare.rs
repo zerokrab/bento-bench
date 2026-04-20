@@ -7,7 +7,7 @@ use risc0_zkvm::{ExecutorEnv, compute_image_id, default_executor};
 use std::path::{Path, PathBuf};
 use tokio::fs;
 
-pub async fn fetch_image(url: &String, dir: &Path) -> Result<String> {
+pub async fn fetch_image(url: &str, dir: &Path) -> Result<String> {
     let elf = StandardDownloader::new()
         .await
         .download_url(url.parse()?)

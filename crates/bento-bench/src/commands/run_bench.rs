@@ -301,7 +301,7 @@ fn median(values: &mut [f64]) -> Option<f64> {
     let len = values.len();
     let mid = len / 2;
 
-    if len % 2 == 0 {
+    if len.is_multiple_of(2) {
         // Even number of elements: average the two middle values
         Some((values[mid - 1] + values[mid]) / 2.0)
     } else {
