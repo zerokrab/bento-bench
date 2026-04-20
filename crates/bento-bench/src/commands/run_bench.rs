@@ -1,5 +1,6 @@
 use crate::ProverConfig;
 use crate::commands::CommonArgs;
+use crate::commands::fetch::fetch_suite;
 use crate::commands::manifest::load_manifest;
 use crate::prove::{prove_snark, prove_stark};
 use anyhow::{Context, Result, anyhow};
@@ -16,6 +17,10 @@ use tokio::fs::write;
 pub struct RunArgs {
     #[clap(flatten)]
     common: CommonArgs,
+
+    /// Fetch a suite from a URL (.tar.zst) instead of using --data-dir
+    #[clap(long, conflicts_with = "data-dir")]
+    fetch: Option<String>,
 
     /// Execute only (no prove)
     #[clap(long, default_value_t = false)]
@@ -101,7 +106,13 @@ pub struct BenchJsonOutput {
 
 impl RunArgs {
     pub async fn run(&self) -> Result<()> {
-        let manifest = load_manifest(&self.common.data_dir, false)?;
+        let data_dir = if let Some(ref url) = self.fetch {
+            fetch_suite(url).await?
+        } else {
+            self.common.data_dir.clone()
+        };
+
+        let manifest = load_manifest(&data_dir, false)?;
 
         self.prover_config
             .proving_backend
@@ -110,7 +121,6 @@ impl RunArgs {
         // Currently only support Bento, not default prover
         let prover: BonsaiClient = BonsaiClient::from_env(risc0_zkvm::VERSION)?;
 
-        let data_dir = self.common.data_dir.clone();
         let images_dir = data_dir.join("images");
         let inputs_dir = data_dir.join("inputs");
 
