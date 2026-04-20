@@ -10,6 +10,7 @@ mod prepare_local;
 mod prepare_request;
 mod run_bench;
 
+mod fetch;
 mod manifest;
 
 #[derive(Parser, Debug)]

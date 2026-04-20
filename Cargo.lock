@@ -1629,6 +1629,7 @@ dependencies = [
  "bonsai-sdk",
  "boundless-market",
  "clap",
+ "futures-util",
  "hex",
  "reqwest 0.12.24",
  "risc0-zkvm",
