@@ -27,7 +27,7 @@ A collection of prepared suites are available:
 | Order Generator (Large)  | 4B      | 4     | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-4-4b.tar.zst      |
 | Order Generator (Varied) | 50M-4B  | 5     | https://boundless-benchmarks.mintybasil.dev/suites/suite-og-4-50m-4b.tar.zst  |
 | Signal                   | 50B     | 4     | https://boundless-benchmarks.mintybasil.dev/suites/suite-signal-4.tar.zst     |
-| Kailua                   | 12B-17B | 4     | https://boundless-benchmarks.mintybasil.dev/suites/suite-kailua-4.tar.zst                                                                              |
+| Kailua                   | 12B-17B | 4     | https://boundless-benchmarks.mintybasil.dev/suites/suite-kailua-4.tar.zst     |
 
 > Note: Please open an issue if you would like to see other suites added.
 
@@ -47,7 +47,7 @@ See `bento-bench run --help` for more configuration options.
 ### Docker
 
 ```shell
-docker run --mount <data-path>:/data ghcr.io/zerokrab/bento-bench 
+docker run --mount <data-path>:/data ghcr.io/zerokrab/bento-bench:latest run --data /data
 ```
 ### Timing Precision 
 bento-bench can time the execution of proofs by either:
@@ -119,7 +119,7 @@ To tar and upload a data dir to an R2/S3 bucket, run:
 
 ```shell
 R2_ACCESS_KEY=<key> \
-R2_SECRET_KEY=<secret-key \
+R2_SECRET_KEY=*** \
 ./scripts/upload-suite.sh <data-dir> <suite-name>
 ```
 
