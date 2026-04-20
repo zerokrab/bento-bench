@@ -51,9 +51,7 @@ RUN apt-get update -q -y \
 
 COPY --from=builder /src/target/release/bento-bench /app/bento-bench
 COPY --from=builder /usr/local/risc0 /usr/local/risc0
-COPY scripts/docker-run-benchmarks.sh /app/docker-run-benchmarks.sh
 
 VOLUME ["/data"]
-VOLUME ["/manifest.json"]
 
-ENTRYPOINT ["/app/docker-run-benchmarks.sh"]
+ENTRYPOINT ["/app/bento-bench"]

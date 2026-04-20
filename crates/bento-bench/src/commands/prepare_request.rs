@@ -52,7 +52,7 @@ impl PrepareRequestArgs {
             .await?;
 
         let (request, _signature) = client
-            .fetch_proof_request(self.request_id, self.tx_hash, None)
+            .fetch_proof_request(self.request_id, self.tx_hash, None, None, None)
             .await?;
         tracing::info!("Fetching image...");
         let image_id = fetch_image(&request.imageUrl, &images_dir).await?;
