@@ -1,13 +1,17 @@
 use alloy::primitives::keccak256;
 use anyhow::{Context, Result, bail};
 use boundless_market::contracts::RequestInputType;
-use boundless_market::{GuestEnv, ProofRequest, storage::fetch_url};
+use boundless_market::storage::StorageDownloader;
+use boundless_market::{GuestEnv, ProofRequest, StandardDownloader};
 use risc0_zkvm::{ExecutorEnv, compute_image_id, default_executor};
 use std::path::{Path, PathBuf};
 use tokio::fs;
 
 pub async fn fetch_image(url: &String, dir: &Path) -> Result<String> {
-    let elf = fetch_url(&url).await?;
+    let elf = StandardDownloader::new()
+        .await
+        .download_url(url.parse()?)
+        .await?;
     let computed_image_id = compute_image_id(&elf)?.to_string();
     let image_id = computed_image_id.clone();
     let elf_path = dir.join(format!("{computed_image_id}.elf"));
@@ -28,7 +32,11 @@ pub async fn fetch_input(request: &ProofRequest, out_dir: &Path) -> Result<Strin
             let input_url =
                 std::str::from_utf8(&request.input.data).context("Input URL is not valid UTF-8")?;
             tracing::debug!("Fetching input from {}", input_url);
-            GuestEnv::decode(&fetch_url(input_url).await?)?.stdin
+            let input = StandardDownloader::new()
+                .await
+                .download_url(input_url.parse()?)
+                .await?;
+            GuestEnv::decode(&input)?.stdin
         }
         _ => bail!("Unsupported input type"),
     };
