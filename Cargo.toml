@@ -13,7 +13,7 @@ guests = { path = "crates/guests" }
 
 anyhow = "1.0.98"
 bonsai-sdk = { version = "1.4.1", features = ["non_blocking"] }
-boundless-market = "1.1.0"
+boundless-market = "1.4.0"
 clap = { version = "4.5", features = ["derive", "env"] }
 hex = { version = "0.4", default-features = false, features = ["alloc"] }
 risc0-build = { version = "3.0.3" }
