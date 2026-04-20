@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, anyhow};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
@@ -22,16 +22,23 @@ pub struct ManifestEntry {
     pub cycles: u64,
 }
 
-pub fn load_manifest(manifest_dir: &Path) -> Result<Manifest> {
+pub fn load_manifest(manifest_dir: &Path, create: bool) -> Result<Manifest> {
     let manifest_path = manifest_dir.join("manifest.json");
 
     if !fs::exists(&manifest_path).unwrap_or(false) {
-        let manifest = Manifest {
-            description: String::from("TODO"),
-            entries: Vec::new(),
+        return match create {
+            true => {
+                let manifest = Manifest {
+                    description: String::from("TODO"),
+                    entries: Vec::new(),
+                };
+                tracing::warn!(
+                    "New manifest file will be created, description needs to be updated"
+                );
+                Ok(manifest)
+            }
+            false => Err(anyhow!("No manifest file found in {manifest_dir:?}")),
         };
-        tracing::warn!("New manifest file will be created, description needs to be updated");
-        return Ok(manifest);
     }
 
     let manifest_str = fs::read_to_string(&manifest_path)
