@@ -31,15 +31,20 @@ A collection of prepared suites are available:
 
 > Note: Please open an issue if you would like to see other suites added.
 
-To fetch and untar:
+To fetch and run a suite directly:
 ```shell
-curl <link> | tar -xv --zstd
+bento-bench run --fetch <link>
 ```
 
-Once you have a data directory, benchmarks can be run with
+Example:
 ```shell
-bento-bench run \
-    --data-dir ./data
+bento-bench run --fetch https://boundless-benchmarks.mintybasil.dev/suites/suite-og-4-1m-10m.tar.zst
+```
+
+Or download and extract manually:
+```shell
+curl <link> | tar -xv --zstd
+bento-bench run --data-dir ./data
 ```
 
 See `bento-bench run --help` for more configuration options.
