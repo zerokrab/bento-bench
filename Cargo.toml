@@ -23,3 +23,8 @@ tokio = "1.44"
 tracing = "0.1"
 tracing-subscriber = "0.3"
 url = "2.5"
+reqwest = { version = "0.12", features = ["stream"] }
+async-compression = { version = "0.4", features = ["tokio", "zstd"] }
+tokio-tar = "0.3"
+tempfile = "3"
+tokio-util = { version = "0.7", features = ["io"] }
