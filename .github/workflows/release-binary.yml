@@ -11,7 +11,7 @@ env:
 
 jobs:
   build-and-release:
-    runs-on: ubuntu-22.04
+    runs-on: [self-hosted, linux, x64, rust]
     permissions:
       packages: write
       contents: write
