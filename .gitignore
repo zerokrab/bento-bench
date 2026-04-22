@@ -16,3 +16,4 @@ target/
 manifest.json
 
 data/
+.worktrees/
