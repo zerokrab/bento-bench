@@ -19,7 +19,7 @@ pub struct RunArgs {
     common: CommonArgs,
 
     /// Fetch a suite from a URL (.tar.zst) instead of using --data-dir
-    #[clap(long, conflicts_with = "data-dir")]
+    #[clap(long)]
     fetch: Option<String>,
 
     /// Execute only (no prove)
