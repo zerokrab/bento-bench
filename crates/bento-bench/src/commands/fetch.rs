@@ -10,9 +10,13 @@ use tokio_util::io::StreamReader;
 pub async fn fetch_suite(url: &str) -> Result<PathBuf> {
     tracing::info!("Fetching suite from {url}");
 
-    // Create a temp directory under the system temp dir
-    let temp_dir = tempfile::tempdir().context("Failed to create temp directory")?;
-    let data_dir = temp_dir.path().to_path_buf();
+    // Create a temp directory under the system temp dir.
+    // keep() converts TempDir into a plain PathBuf, preventing automatic
+    // deletion when the value is dropped. The directory persists for the
+    // lifetime of the process and the OS cleans it up on exit.
+    let data_dir = tempfile::tempdir()
+        .context("Failed to create temp directory")?
+        .keep();
 
     // Download the archive with streaming
     let response = reqwest::get(url)
