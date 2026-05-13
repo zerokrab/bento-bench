@@ -72,30 +72,30 @@ pub struct BenchResult {
     pub snark_secs: Option<f64>,
     #[tabled(rename = "Total Duration (secs)")]
     pub total_secs: f64,
-    #[tabled(rename = "Exec KHz")]
-    pub exec_khz: f64,
-    #[tabled(rename = "Prove KHz", display("display::option", "Skipped"))]
-    pub prove_khz: Option<f64>,
+    #[tabled(rename = "Exec MHz")]
+    pub exec_mhz: f64,
+    #[tabled(rename = "Prove MHz", display("display::option", "Skipped"))]
+    pub prove_mhz: Option<f64>,
 }
 
 #[derive(Tabled, Serialize, Debug, Clone)]
 pub struct BenchSummary {
-    #[tabled(rename = "Exec Min KHz")]
-    pub exec_min_khz: u32,
-    #[tabled(rename = "Exec Max KHz")]
-    pub exec_max_khz: u32,
-    #[tabled(rename = "Exec Avg KHz")]
-    pub exec_avg_khz: u32,
-    #[tabled(rename = "Exec Median KHz")]
-    pub exec_median_khz: u32,
-    #[tabled(rename = "Prove Min KHz", display("display::option", "Skipped"))]
-    pub prove_min_khz: Option<u32>,
-    #[tabled(rename = "Prove Max KHz", display("display::option", "Skipped"))]
-    pub prove_max_khz: Option<u32>,
-    #[tabled(rename = "Prove Avg KHz", display("display::option", "Skipped"))]
-    pub prove_avg_khz: Option<u32>,
-    #[tabled(rename = "Prove Median KHz", display("display::option", "Skipped"))]
-    pub prove_median_khz: Option<u32>,
+    #[tabled(rename = "Exec Min MHz")]
+    pub exec_min_mhz: u32,
+    #[tabled(rename = "Exec Max MHz")]
+    pub exec_max_mhz: u32,
+    #[tabled(rename = "Exec Avg MHz")]
+    pub exec_avg_mhz: u32,
+    #[tabled(rename = "Exec Median MHz")]
+    pub exec_median_mhz: u32,
+    #[tabled(rename = "Prove Min MHz", display("display::option", "Skipped"))]
+    pub prove_min_mhz: Option<u32>,
+    #[tabled(rename = "Prove Max MHz", display("display::option", "Skipped"))]
+    pub prove_max_mhz: Option<u32>,
+    #[tabled(rename = "Prove Avg MHz", display("display::option", "Skipped"))]
+    pub prove_avg_mhz: Option<u32>,
+    #[tabled(rename = "Prove Median MHz", display("display::option", "Skipped"))]
+    pub prove_median_mhz: Option<u32>,
 }
 
 #[derive(Serialize)]
@@ -153,7 +153,7 @@ impl RunArgs {
                 .with_context(|| format!("Failed to load input file: {}", input_path.display()))?;
 
             tracing::debug!("Running program preflight...");
-            let (_, session_stats, exec_duration_secs, exec_khz) = prove_stark(
+            let (_, session_stats, exec_duration_secs, exec_mhz) = prove_stark(
                 prover.clone(),
                 image_id.clone(),
                 elf.clone(),
@@ -166,12 +166,12 @@ impl RunArgs {
             .context("Execution failed")?;
 
             tracing::debug!("Running stark proof...");
-            let (session_id, stark_duration_secs, stark_khz) = if self.exec_only {
+            let (session_id, stark_duration_secs, stark_mhz) = if self.exec_only {
                 tracing::debug!("Exec only, skipping proof generation");
                 (None, None, None)
             } else {
                 tracing::debug!("Generating program proof");
-                let (session_id, _, stark_duration, stark_khz) = prove_stark(
+                let (session_id, _, stark_duration, stark_mhz) = prove_stark(
                     prover.clone(),
                     image_id.clone(),
                     elf.clone(),
@@ -183,7 +183,7 @@ impl RunArgs {
                 .await
                 .context("Stark proving failed")?;
 
-                (Some(session_id), Some(stark_duration), Some(stark_khz))
+                (Some(session_id), Some(stark_duration), Some(stark_mhz))
             };
 
             let snark_duration_secs = if self.run_snark {
@@ -213,8 +213,8 @@ impl RunArgs {
                 total_secs: exec_duration_secs
                     + stark_duration_secs.unwrap_or(0.0)
                     + snark_duration_secs.unwrap_or(0.0),
-                exec_khz,
-                prove_khz: stark_khz,
+                exec_mhz,
+                prove_mhz: stark_mhz,
             };
 
             print_bench_result(&bench_result);
@@ -254,39 +254,39 @@ fn print_bench_summary(bench_summary: &BenchSummary) {
 }
 
 fn get_bench_summary(results: &[BenchResult]) -> BenchSummary {
-    let mut exec_res: Vec<f64> = results.iter().map(|r| r.exec_khz).collect();
-    let min_exec_khz = exec_res.iter().fold(f64::INFINITY, |a, &b| a.min(b));
-    let max_exec_khz = exec_res.iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
-    let avg_exec_khz = exec_res.iter().fold(0.0, |acc, x| acc + x) / results.len() as f64;
-    let median_exec_khz = median(&mut exec_res).unwrap_or(0.0);
+    let mut exec_res: Vec<f64> = results.iter().map(|r| r.exec_mhz).collect();
+    let min_exec_mhz = exec_res.iter().fold(f64::INFINITY, |a, &b| a.min(b));
+    let max_exec_mhz = exec_res.iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
+    let avg_exec_mhz = exec_res.iter().fold(0.0, |acc, x| acc + x) / results.len() as f64;
+    let median_exec_mhz = median(&mut exec_res).unwrap_or(0.0);
 
-    if !results.is_empty() && results[0].prove_khz.is_some() {
-        let mut prove_res: Vec<f64> = results.iter().map(|r| r.prove_khz.unwrap()).collect();
-        let min_prove_khz = prove_res.iter().fold(f64::INFINITY, |a, &b| a.min(b));
-        let max_prove_khz = prove_res.iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
-        let avg_prove_khz = prove_res.iter().fold(0.0, |acc, x| acc + x) / results.len() as f64;
-        let median_prove_khz = median(&mut prove_res).unwrap_or(0.0);
+    if !results.is_empty() && results[0].prove_mhz.is_some() {
+        let mut prove_res: Vec<f64> = results.iter().map(|r| r.prove_mhz.unwrap()).collect();
+        let min_prove_mhz = prove_res.iter().fold(f64::INFINITY, |a, &b| a.min(b));
+        let max_prove_mhz = prove_res.iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
+        let avg_prove_mhz = prove_res.iter().fold(0.0, |acc, x| acc + x) / results.len() as f64;
+        let median_prove_mhz = median(&mut prove_res).unwrap_or(0.0);
 
         BenchSummary {
-            exec_min_khz: min_exec_khz as u32,
-            exec_max_khz: max_exec_khz as u32,
-            exec_avg_khz: avg_exec_khz as u32,
-            exec_median_khz: median_exec_khz as u32,
-            prove_min_khz: Some(min_prove_khz as u32),
-            prove_max_khz: Some(max_prove_khz as u32),
-            prove_avg_khz: Some(avg_prove_khz as u32),
-            prove_median_khz: Some(median_prove_khz as u32),
+            exec_min_mhz: min_exec_mhz as u32,
+            exec_max_mhz: max_exec_mhz as u32,
+            exec_avg_mhz: avg_exec_mhz as u32,
+            exec_median_mhz: median_exec_mhz as u32,
+            prove_min_mhz: Some(min_prove_mhz as u32),
+            prove_max_mhz: Some(max_prove_mhz as u32),
+            prove_avg_mhz: Some(avg_prove_mhz as u32),
+            prove_median_mhz: Some(median_prove_mhz as u32),
         }
     } else {
         BenchSummary {
-            exec_min_khz: min_exec_khz as u32,
-            exec_max_khz: max_exec_khz as u32,
-            exec_avg_khz: avg_exec_khz as u32,
-            exec_median_khz: median_exec_khz as u32,
-            prove_min_khz: None,
-            prove_max_khz: None,
-            prove_avg_khz: None,
-            prove_median_khz: None,
+            exec_min_mhz: min_exec_mhz as u32,
+            exec_max_mhz: max_exec_mhz as u32,
+            exec_avg_mhz: avg_exec_mhz as u32,
+            exec_median_mhz: median_exec_mhz as u32,
+            prove_min_mhz: None,
+            prove_max_mhz: None,
+            prove_avg_mhz: None,
+            prove_median_mhz: None,
         }
     }
 }

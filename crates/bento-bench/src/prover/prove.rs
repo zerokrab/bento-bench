@@ -68,7 +68,7 @@ pub async fn prove_stark(
         }
     };
 
-    // Try to get effective KHz from PostgreSQL if available
+    // Try to get effective MHz from PostgreSQL if available
     let elapsed_secs = if let Some(ref pool) = pg_pool {
         get_taskdb_duration_secs(pool, &session_id.uuid.to_string()).await?
     } else {
@@ -76,13 +76,13 @@ pub async fn prove_stark(
         start_time.elapsed().as_secs_f64()
     };
 
-    let khz = if elapsed_secs > 0.0 {
-        stats.total_cycles as f64 / elapsed_secs / 1000.0
+    let mhz = if elapsed_secs > 0.0 {
+        stats.total_cycles as f64 / elapsed_secs / 1_000_000.0
     } else {
         0.0
     };
 
-    Ok((session_id, stats, elapsed_secs, khz))
+    Ok((session_id, stats, elapsed_secs, mhz))
 }
 
 pub async fn prove_snark(
@@ -117,7 +117,7 @@ pub async fn prove_snark(
         }
     }
 
-    // Try to get effective KHz from PostgreSQL if available
+    // Try to get effective MHz from PostgreSQL if available
     if let Some(ref pool) = pool {
         let elapsed_secs = get_taskdb_duration_secs(pool, &snark_id.uuid.to_string()).await?;
         Ok((snark_id, elapsed_secs))
