@@ -81,21 +81,21 @@ pub struct BenchResult {
 #[derive(Tabled, Serialize, Debug, Clone)]
 pub struct BenchSummary {
     #[tabled(rename = "Exec Min MHz")]
-    pub exec_min_mhz: u32,
+    pub exec_min_mhz: f64,
     #[tabled(rename = "Exec Max MHz")]
-    pub exec_max_mhz: u32,
+    pub exec_max_mhz: f64,
     #[tabled(rename = "Exec Avg MHz")]
-    pub exec_avg_mhz: u32,
+    pub exec_avg_mhz: f64,
     #[tabled(rename = "Exec Median MHz")]
-    pub exec_median_mhz: u32,
+    pub exec_median_mhz: f64,
     #[tabled(rename = "Prove Min MHz", display("display::option", "Skipped"))]
-    pub prove_min_mhz: Option<u32>,
+    pub prove_min_mhz: Option<f64>,
     #[tabled(rename = "Prove Max MHz", display("display::option", "Skipped"))]
-    pub prove_max_mhz: Option<u32>,
+    pub prove_max_mhz: Option<f64>,
     #[tabled(rename = "Prove Avg MHz", display("display::option", "Skipped"))]
-    pub prove_avg_mhz: Option<u32>,
+    pub prove_avg_mhz: Option<f64>,
     #[tabled(rename = "Prove Median MHz", display("display::option", "Skipped"))]
-    pub prove_median_mhz: Option<u32>,
+    pub prove_median_mhz: Option<f64>,
 }
 
 #[derive(Serialize)]
@@ -268,21 +268,21 @@ fn get_bench_summary(results: &[BenchResult]) -> BenchSummary {
         let median_prove_mhz = median(&mut prove_res).unwrap_or(0.0);
 
         BenchSummary {
-            exec_min_mhz: min_exec_mhz as u32,
-            exec_max_mhz: max_exec_mhz as u32,
-            exec_avg_mhz: avg_exec_mhz as u32,
-            exec_median_mhz: median_exec_mhz as u32,
-            prove_min_mhz: Some(min_prove_mhz as u32),
-            prove_max_mhz: Some(max_prove_mhz as u32),
-            prove_avg_mhz: Some(avg_prove_mhz as u32),
-            prove_median_mhz: Some(median_prove_mhz as u32),
+            exec_min_mhz: min_exec_mhz,
+            exec_max_mhz: max_exec_mhz,
+            exec_avg_mhz: avg_exec_mhz,
+            exec_median_mhz: median_exec_mhz,
+            prove_min_mhz: Some(min_prove_mhz),
+            prove_max_mhz: Some(max_prove_mhz),
+            prove_avg_mhz: Some(avg_prove_mhz),
+            prove_median_mhz: Some(median_prove_mhz),
         }
     } else {
         BenchSummary {
-            exec_min_mhz: min_exec_mhz as u32,
-            exec_max_mhz: max_exec_mhz as u32,
-            exec_avg_mhz: avg_exec_mhz as u32,
-            exec_median_mhz: median_exec_mhz as u32,
+            exec_min_mhz: min_exec_mhz,
+            exec_max_mhz: max_exec_mhz,
+            exec_avg_mhz: avg_exec_mhz,
+            exec_median_mhz: median_exec_mhz,
             prove_min_mhz: None,
             prove_max_mhz: None,
             prove_avg_mhz: None,
